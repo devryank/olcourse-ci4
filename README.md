@@ -36,13 +36,14 @@ Sama seperti website online course lainnya, website olcourse-ci4 ini dapat digun
 1. `git clone https://github.com/devryank/olcourse-ci4.git`
 2. Buat database di local dengan nama olcourse atau yang lainnya.
 3. Import olcourse.db
-4. setting .env sesuai kebutuhan
+4. Ubah nama env menjadi .env
+5. setting .env sesuai kebutuhan
  	- database.default.hostname = localhost
 	- database.default.database = olcourse
 	- database.default.username = root
 	- database.default.password =
 	- database.default.DBDriver = MySQLi
-5. `php spark serve`
+6. `php spark serve`
 
 ## Tahap Tambahan - Fitur Kirim E-mail
 1. Buka Controller Auth, Admin, dan Home.
