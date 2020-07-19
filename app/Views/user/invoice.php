@@ -50,6 +50,11 @@
             </div>
         </div>
         <p class="mt-3">>> <a href="<?= site_url('user/konfirmasi-pembayaran');?>">Halaman konfirmasi pembayaran</a></p>
+        <p>
+            No Rek : 04xx-xx-xxxxx-xx-x
+            <br>
+            a.n Online Course
+        </p>
     </div>
 </div>
 <?= $this->endSection(); ?>
