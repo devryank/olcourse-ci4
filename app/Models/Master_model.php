@@ -138,6 +138,17 @@ class Master_model extends Model
         return $query;
     }
 
+    public function get_last_insert_id_where($table, $column, $where)
+    {
+        $query = $this->db->table($table)
+                          ->select($column)
+                          ->limit('1')
+                          ->where($where)
+                          ->orderBy($column, 'desc')
+                          ->get();
+        return $query;
+    }
+
     // START GRAFIK
 
     public function getMonth()

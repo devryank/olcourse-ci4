@@ -14,27 +14,35 @@ class Admin extends Controller
 
 	public function index()
 	{
+		// helper timezone (jakarta)
 		helper('my_timezone');
 		$number_of_users = $this->master->count_data('users', ['level' => 'user', 'is_active' => '1']);
 		$number_of_packages = $this->master->count_data('packages', []);
 		$number_of_classes = $this->master->count_data('classes', []);
 
+		// hitung jumlah transaksi yang terjadi hari ini
 		$number_of_transactions = $this->master->count_data('transactions', ['order_date >=' => my_timezone()->format('Y-m-d 00:00:00'),
 																			'order_date <=' => my_timezone()->format('Y-m-d 23:59:59')]);
 		
+		// LINE CHART
+		// data bulan yang memiliki transaksi
 		$month_data = $this->master->getMonth()->getResult();
 		$label_month = [];
 		foreach ($month_data as $value) {
 			$label_month[] = $value->bulan;
 		}
 
+		// total transaksi per bulan
 		$transaction_data = $this->master->totalTransactionsPerMonth()->getResult();
 		$label_transaction = [];
 		foreach ($transaction_data as $value) {
 			$label_transaction[] = $value->jml;
 		}
 
+		// PIE CHART
+		// pembelian paket bulan ini
 		$transaction_package_this_month = $this->master->get_select('transactions', 'count(id) as total', ['option' => 'package', 'is_paid' => '1', 'MONTH(payment_date)' => my_timezone()->format('m')])->getRow();
+		// pembelian kelas bulan ini
 		$transaction_class_this_month = $this->master->get_select('transactions', 'count(id) as total', ['option' => 'class', 'is_paid' => '1', 'MONTH(payment_date)' => my_timezone()->format('m')])->getRow();
 		$data = [
 			'title' => 'Admin',
@@ -90,10 +98,14 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/kelas/add', $data);
 		} else {
+			// data terakhir dari table classes
 			$last_id = $this->master->get_last_insert_id('classes', 'class_id')->getRow();
+			// nama gambar yang diinsert
 			$avatar = $this->request->getFile('img');
+			// random nama
 			$name = $avatar->getRandomName();
 			$input = [
+				// id kelas terakhir + 1
 				'class_id' => $last_id->class_id + 1,
 				'class_name' => $this->request->getPost('class_name'),
 				'slug' => url_title(strtolower($this->request->getPost('class_name'))),
@@ -143,9 +155,12 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/kelas/edit', $data);
 		} else {
+			// nama file gambar yang diinsert
 			$avatar = $this->request->getFile('img');
+			// jika user tidak input gambar
 			if($avatar->getName() == '')
 			{
+				// input data tanpa img
 				$input = [
 					'class_name' => $this->request->getPost('class_name'),
 					'slug' => url_title(strtolower($this->request->getPost('class_name'))),
@@ -214,6 +229,7 @@ class Admin extends Controller
 		echo view('dashboard/master/topik/add', $data);
 	}
 
+	// FUNCTION UNTUK UPLOAD IMAGE MENGGUNAKAN CKEDITOR
 	public function add_image()
 	{
 		if(isset($_FILES['upload']['name']))
@@ -262,7 +278,12 @@ class Admin extends Controller
 				'slug' => url_title(strtolower($this->request->getPost('topic_name'))),
 				'content' => $this->request->getPost('content'),
 			];
+
+			// FITUR NUMBERING UNTUK TOPIK
+
+			// hitung topik yang nomornya >= dengan nomor yang diinput
 			$count_data_topics = $this->master->count_data('topics', ['number >=' => $this->request->getPost('number'), 'class_id' => $this->request->getPost('class_id')]);
+			// jika ada nomor yang lebih besar dari nomor yang diinput
 			if($count_data_topics > 0)
 			{
 				$get_all_number = $this->master->get_select('topics', 'topic_id, number', ['class_id' => $this->request->getPost('class_id'), 'number >=' => $this->request->getPost('number')])->getResult();
@@ -277,6 +298,7 @@ class Admin extends Controller
 				{ 
 					$data[$i] = [
 						'topic_id' => $topic_id[$i],
+						// semua nomor yang >= dari inputan number ditambah 1 agar tidak ada yang bentrok
 						'number' => $number[$i] + 1
 					];
 				}
@@ -338,7 +360,12 @@ class Admin extends Controller
 			];
 			$getIdClasses = $this->master->get_field('classes', ['slug' => $slug_class])->getRow();
 			$getIdTopics = $this->master->get_field('topics', ['class_id' => $getIdClasses->class_id, 'slug' => $slug_topic])->getRow();
+
+			// FITUR NUMBERING UNTUK TOPIK
+
+			// hitung topik yang nomornya >= dengan nomor yang diinput
 			$count_data_topics = $this->master->count_data('topics', ['number >=' => $this->request->getPost('number'), 'class_id' => $getIdClasses->class_id]);
+			// jika ada nomor yang lebih besar dari nomor yang diinput
 			if($count_data_topics > 0)
 			{
 				$get_all_number = $this->master->get_select('topics', 'topic_id, number', ['class_id' => $this->request->getPost('class_id'), 'number >=' => $this->request->getPost('number')])->getResult();
@@ -353,6 +380,7 @@ class Admin extends Controller
 				{ 
 					$data[$i] = [
 						'topic_id' => $topic_id[$i],
+						// semua nomor yang >= dari inputan number ditambah 1 agar tidak ada yang bentrok
 						'number' => $number[$i] + 1
 					];
 				}
@@ -370,9 +398,12 @@ class Admin extends Controller
 	}
 
 	public function delete_topik($slug_class, $slug_topic)
-	{		
+	{	
+		// ambil id kelas dari slug kelas
 		$getIdClasses = $this->master->get_field('classes', ['slug' => $slug_class])->getRow();
+		// ambil id topik dari id kelas dan slug topik
 		$getIdTopics = $this->master->get_field('topics', ['class_id' => $getIdClasses->class_id, 'slug' => $slug_topic])->getRow();
+		// delete topik
 		$query = $this->master->delete_data('topics', ['topic_id' => $getIdTopics->topic_id]);
 		if ($query) {
 			session()->setFlashdata('message', '<div class="alert alert-success">Berhasil menghapus topik</div>');
@@ -437,11 +468,16 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/paket/add', $data);
 		} else {
+			// ambil id terakhir dari table paket
 			$last_id = $this->master->get_last_insert_id('packages', 'package_id')->getRow();
+			// simpan semua id kelas dalam array
 			$class[] = $this->request->getPost('class_id');
+			// jumlah data dlm array class
 			$length_class = count($class);
 			$data = [];
+			// ambil nama gambar yg diinput
 			$avatar = $this->request->getFile('img');
+			// random nama gambar
 			$name[0] = $avatar->getRandomName();
 			$insert_package = array(
 				'package_id' => $last_id->package_id + 1,
@@ -453,8 +489,11 @@ class Admin extends Controller
 				'duration' => $this->request->getPost('duration')
 			);
 
+			// upload gambar ke direktori public/assets/uploads/packages/
 			$avatar->move('assets/uploads/packages/', $name[0]);
+			// insert data paket ke table packages
 			$query = $this->master->insert_data('packages', $insert_package);
+			// jika insert berhasil 
 			if($query)
 			{
 				$package_id[0] = $insert_package['package_id'];
@@ -464,6 +503,7 @@ class Admin extends Controller
 						'class_id' => $class[0][$i],
 					);
 				}
+				// insert masing-masing id kelas sesuai id paket yang sudah diinput ke table class_packages
 				$query = $this->master->insert_data_batch('class_packages', $data);
 
 				if ($query) {
@@ -518,15 +558,26 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/paket/edit', $data);
 		} else {
+			// ambil data paket berdasarkan slug
 			$package = $this->master->get_field('packages', ['slug' => $slug])->getRow();
+			// hitung jumlah kelas dari paket tersebut
 			$count_data_db = $this->master->count_data('class_packages', ['package_id' => $package->package_id]);
+			// hitung jumlah id kelas yang diinput
 			$length_class = count($this->request->getPost('class_id'));
+			// ambil nama gambar yg diinput
 			$avatar = $this->request->getFile('img');
+			// random nama gambar
 			$name[0] = $avatar->getRandomName();
+			// simpan semua id kelas ke dalam array
 			$class[] = $this->request->getPost('class_id');
 			$update_class = [];
 			$insert_class = [];
+			// ambil nama gambar dari paket yang akan diedit
 			$file_name = $this->master->get_select('packages', 'img', ['slug' => $slug])->getRow()->img;
+
+			// jika jumlah id kelas di table class_packages < jumlah id kelas yang diinput
+			// update satu per satu id kelas di table class_packages
+			// kemudian insert id kelas (karena jumlah di db < jumlah inputan)
 			if($count_data_db < $length_class)
 			{
 				$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
@@ -601,8 +652,14 @@ class Admin extends Controller
 						$query = $this->master->insert_data_batch('class_packages', $insert_class);
 					}
 				}
-			} else if($count_data_db > $length_class)
+				
+			} else if($count_data_db > $length_class) 
 			{
+				// jika jumlah id kelas di table class_packages > jumlah id kelas yang diinput
+				// masukkan semua id kelas yang ada di class_packages dan id kelas yang diinput ke dalam array
+				// cek id kelas yang hanya ada di array yang menampung data dari db
+				// hapus id kelas tersebut
+				// kemudian update semua id kelas dari paket tersebut
 				$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
 				$class_id = [];
 				foreach ($class_packages as $row) 
@@ -668,8 +725,11 @@ class Admin extends Controller
 				
 				$query = $this->master->update_data_batch('class_packages', $update_class, 'class_package_id');
 				$query = TRUE;
+
 			} else if($count_data_db == $length_class)
 			{
+				// jika jumlah id kelas di table class_packages == jumlah id kelas yang diinput
+				// update semua id kelas dari paket tersebut
 				$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
 				$class_package_id = [];
 				$package_id = [];
@@ -737,7 +797,9 @@ class Admin extends Controller
 
 	public function delete_paket($slug)
 	{
+		// nama gambar
 		$file_name = $this->master->get_field('packages', ['slug' => $slug])->getRow()->img;
+		// hapus gambar di direktori public/assets/uploads/packages
 		unlink('assets/uploads/packages/' . $file_name);
 
 		$query = $this->master->delete_data('packages', ['slug' => $slug]);
@@ -780,6 +842,7 @@ class Admin extends Controller
 			'from' => $this->request->getPost('from'),
 			'to' => $this->request->getPost('to'),
 		];
+		// validasi inputan
 		if (!$validation->run($input, 'promo')) {
 			helper('form');
 			$data = [
@@ -788,9 +851,12 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/diskon/add', $data);
 		} else {
+			// cek apakah ada kode promo yang sama di db
 			$check = $this->master->get_select('discounts', 'promo_code', ['promo_code' => $this->request->getPost('promo_code')])->getRow();
+			// jika tidak ada
 			if(!$check)
 			{
+				// insert ke db
 				$query = $this->master->insert_data('discounts', $input);
 				if ($query) 
 				{
@@ -828,6 +894,7 @@ class Admin extends Controller
 			'from' => $this->request->getPost('from'),
 			'to' => $this->request->getPost('to'),
 		];
+		// validasi inputan
 		if (!$validation->run($input, 'promo')) {
 			helper('form');
 			$data = [
@@ -872,11 +939,12 @@ class Admin extends Controller
 
 	public function verify_payment($id)
 	{
+		// ambil email user dari id user di table transactions
 		$user = $this->master->get_join('transactions', 'users.email', 'users', 'users.user_id=transactions.user_id', ['transactions.transaction_id' => $id])->getRow();
 		
-		// BUAT TOKEN ACTIVATION
-		$seed = str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ'); // and any other characters
-		shuffle($seed); // probably optional since array_is randomized; this may be redundant
+		// START BUAT TOKEN AIKTIVASI
+		$seed = str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ'); 
+		shuffle($seed); 
 		$rand = '';
 		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
 
@@ -887,6 +955,7 @@ class Admin extends Controller
 			'token' => $rand
 		];
 		$query = $this->master->update_data('transactions', ['transaction_id' => $id], $data);
+		// END BUAT TOKEN AIKTIVASI
 
 		if ($query) {
 			// kirim token ke email
