@@ -35,7 +35,7 @@ Sama seperti website online course lainnya, website olcourse-ci4 ini dapat digun
 ## How to Install
 1. `git clone https://github.com/devryank/olcourse-ci4.git`
 2. Buat database di local dengan nama olcourse atau yang lainnya.
-3. Import olcourse.db
+3. Import olcourse.sql
 4. Ubah nama env menjadi .env
 5. setting .env sesuai kebutuhan
  	- database.default.hostname = localhost

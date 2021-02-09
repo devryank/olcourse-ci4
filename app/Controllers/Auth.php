@@ -1,8 +1,12 @@
-<?php namespace App\Controllers;
+<?php
+
+namespace App\Controllers;
 
 use App\Models\Master_model;
 use CodeIgniter\Controller;
-class Auth extends Controller {
+
+class Auth extends Controller
+{
 
     protected $master;
 
@@ -28,8 +32,7 @@ class Auth extends Controller {
             'email' => $this->request->getPost('email'),
             'password' => $this->request->getPost('password'),
         ];
-        if(!$validation->run($input, 'login'))
-        {
+        if (!$validation->run($input, 'login')) {
             $data = [
                 'title' => 'Login'
             ];
@@ -39,14 +42,11 @@ class Auth extends Controller {
             // ambil data user berdasarkan email
             $user = $this->master->get_field('users', ['email' => $this->request->getPost('email')])->getRow();
             // jika ada
-            if($user)
-            {
+            if ($user) {
                 // verify password
-                if(password_verify($this->request->getPost('password'), $user->password))
-                {
+                if (password_verify($this->request->getPost('password'), $user->password)) {
                     // jika akun user sudah aktif
-                    if($user->is_active == '1')
-                    {
+                    if ($user->is_active == '1') {
                         // session user
                         $data_sess = [
                             'user_id' => $user->user_id,
@@ -57,30 +57,28 @@ class Auth extends Controller {
                         ];
                         session()->set($data_sess);
                         // jika level user == user
-                        if($user->level == 'user')
-                        {
+                        if ($user->level == 'user') {
                             session()->setFlashdata('message', '<div class="alert alert-success">Selamat datang, ' . $user->full_name . '</div>');
                             return redirect()->route('/');
-                        // jika level user == admin
-                        } else if($user->level == 'admin')
-                        {
+                            // jika level user == admin
+                        } else if ($user->level == 'admin') {
                             session()->setFlashdata('message', '<div class="alert alert-success">Selamat datang, ' . $user->full_name . '</div>');
                             return redirect()->route('admin');
-                        // jika level user bukan user dan admin
+                            // jika level user bukan user dan admin
                         } else {
                             session()->setFlashdata('message', '<div class="alert alert-danger">Gagal login! Silahkan coba kembali</div>');
                             return redirect()->route('auth');
                         }
-                    // jika akun user belum aktif
+                        // jika akun user belum aktif
                     } else {
                         session()->setFlashdata('message', '<div class="alert alert-danger">Akun kamu belum aktif! Silahkan cek email untuk verifikasi</div>');
                         return redirect()->route('auth');
                     }
-                // jika password salah
+                    // jika password salah
                 } else {
                     return redirect()->back()->with('message', '<div class="alert alert-danger">Password salah! Silahkan coba kembali</div>');
                 }
-            // jika akun tidak ditemukan
+                // jika akun tidak ditemukan
             } else {
                 return redirect()->back()->with('message', '<div class="alert alert-danger">Akun tidak terdaftar! Silahkan mendaftar terlebih dahulu</div>');
             }
@@ -98,8 +96,7 @@ class Auth extends Controller {
             'password' => $this->request->getPost('password'),
             're_password' => $this->request->getPost('re_password'),
         ];
-        if(!$validation->run($input, 'register'))
-        {
+        if (!$validation->run($input, 'register')) {
             $data = [
                 'title' => 'Registrasi'
             ];
@@ -114,7 +111,7 @@ class Auth extends Controller {
             ];
             // encode ubah username menjadi base64
             $encoded   = base64_encode($this->request->getPost('username'));
-            
+
             // kirim email berisi link konfirmasi akun ke user
             $email = \Config\Services::email();
             $config = [
@@ -123,7 +120,7 @@ class Auth extends Controller {
                 'protocol'  => 'smtp',
                 'SMTPHost' => 'smtp.gmail.com',
                 'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-                'SMTPPass'   => 'gantipassword',  // Password gmail
+                'SMTPPass'   => 'passwordkamu',  // Password gmail
                 'smtpCrypto' => 'ssl',
                 'smtpPort'   => 465,
                 'CRLF'    => "\r\n",
@@ -139,15 +136,13 @@ class Auth extends Controller {
             <p><a href="http://localhost:8080/auth/confirmation/' . $encoded . '">Klik disini</a></p>
             ');
 
-            if($email->send())
-            {
+            if ($email->send()) {
                 echo 'berhasil';
             } else {
                 echo 'gagal';
             }
             $query = $this->master->insert_data('users', $input);
-            if($query)
-            {
+            if ($query) {
                 return redirect()->back()->with('message', '<div class="alert alert-success">Berhasil mendaftar! Silahkan cek email kamu</div>');
             } else {
                 return redirect()->back()->with('message', '<div class="alert alert-danger">Gagal mendaftar! Silahkan coba kembali</div>');
@@ -162,11 +157,10 @@ class Auth extends Controller {
         // verifikasi username user
         $query = $this->master->verification($username);
         // jika akun ditemukan dan berhasil update
-        if($query)
-        {
+        if ($query) {
             session()->setFlashdata('message', '<div class="alert alert-success">Verifikasi berhasil! Silahkan login</div>');
             return redirect()->route('user/login');
-        // jika akun tidak ditemukan
+            // jika akun tidak ditemukan
         } else {
             session()->setFlashdata('message', '<div class="alert alert-danger">Verifikasi gagal! Silahkan hubungi admin</div>');
             return redirect()->route('user/login');
@@ -193,18 +187,16 @@ class Auth extends Controller {
             'email' => $this->request->getPost('email')
         ];
 
-        if(!$validation->run($input, 'forgot'))
-        {
+        if (!$validation->run($input, 'forgot')) {
             helper('form');
             $data = [
                 'title' => 'Forgot Password',
             ];
             echo view('auth/forgot', $data);
-        }else
-        {
+        } else {
             // encode email menjadi base64
             $encoded = base64_encode($this->request->getPost('email'));
-            
+
             // kirim email berisi link untuk membuat password ke user
             $email = \Config\Services::email();
             $config = [
@@ -213,7 +205,7 @@ class Auth extends Controller {
                 'protocol'  => 'smtp',
                 'SMTPHost' => 'smtp.gmail.com',
                 'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail admin
-                'SMTPPass'   => 'gantipassword',  // Password gmail admin
+                'SMTPPass'   => 'passwordkamu',  // Password gmail admin
                 'smtpCrypto' => 'ssl',
                 'smtpPort'   => 465,
                 'CRLF'    => "\r\n",
@@ -229,8 +221,7 @@ class Auth extends Controller {
             <p><a href="http://localhost:8080/auth/new-password/' . $encoded . '">Reset Password</a></p>
             ');
 
-            if($email->send())
-            {
+            if ($email->send()) {
                 session()->setFlashdata('message', '<div class="alert alert-info">Silahkan cek email kamu!</div>');
                 return redirect()->route('user/login');
             } else {
@@ -244,19 +235,17 @@ class Auth extends Controller {
     public function logout()
     {
         // jika user logout
-        if(session()->get('level') == 'user')
-        {
+        if (session()->get('level') == 'user') {
             session()->destroy();
             // redirect ke user/login
-            return redirect()->route('user/login');            
-        // jika admin logout
-        } else if(session()->get('level') == 'admin')
-        {
+            return redirect()->route('user/login');
+            // jika admin logout
+        } else if (session()->get('level') == 'admin') {
             session()->destroy();
             // redirect ke auth
             return redirect()->route('auth');
-        }else{
+        } else {
             echo 'ERROR';
         }
-    } 
+    }
 }

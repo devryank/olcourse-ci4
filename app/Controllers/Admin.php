@@ -21,9 +21,11 @@ class Admin extends Controller
 		$number_of_classes = $this->master->count_data('classes', []);
 
 		// hitung jumlah transaksi yang terjadi hari ini
-		$number_of_transactions = $this->master->count_data('transactions', ['order_date >=' => my_timezone()->format('Y-m-d 00:00:00'),
-																			'order_date <=' => my_timezone()->format('Y-m-d 23:59:59')]);
-		
+		$number_of_transactions = $this->master->count_data('transactions', [
+			'order_date >=' => my_timezone()->format('Y-m-d 00:00:00'),
+			'order_date <=' => my_timezone()->format('Y-m-d 23:59:59')
+		]);
+
 		// LINE CHART
 		// data bulan yang memiliki transaksi
 		$month_data = $this->master->getMonth()->getResult();
@@ -158,8 +160,7 @@ class Admin extends Controller
 			// nama file gambar yang diinsert
 			$avatar = $this->request->getFile('img');
 			// jika user tidak input gambar
-			if($avatar->getName() == '')
-			{
+			if ($avatar->getName() == '') {
 				// input data tanpa img
 				$input = [
 					'class_name' => $this->request->getPost('class_name'),
@@ -232,8 +233,7 @@ class Admin extends Controller
 	// FUNCTION UNTUK UPLOAD IMAGE MENGGUNAKAN CKEDITOR
 	public function add_image()
 	{
-		if(isset($_FILES['upload']['name']))
-		{
+		if (isset($_FILES['upload']['name'])) {
 			$file = $_FILES['upload']['tmp_name'];
 			$file_name = $_FILES['upload']['name'];
 			$file_name_array = explode(".", $file_name);
@@ -241,8 +241,7 @@ class Admin extends Controller
 			$new_image_name = rand() . '.' . $extension;
 			chmod('assets/uploads/topik', 0777);
 			$allowed_extension = array("jpg", "gif", "png");
-			if(in_array($extension, $allowed_extension))
-			{
+			if (in_array($extension, $allowed_extension)) {
 				move_uploaded_file($file, 'assets/uploads/topik/' . $new_image_name);
 				$function_number = $_GET['CKEditorFuncNum'];
 				$url = 'assets/uploads/topik/' . $new_image_name;
@@ -266,7 +265,7 @@ class Admin extends Controller
 			helper('form');
 			$data = [
 				'title' => 'Master Topik',
-			'segment' => $this->request->uri->getSegments(),
+				'segment' => $this->request->uri->getSegments(),
 				'listClasses' => $this->master->get_all('classes')->getResult()
 			];
 			echo view('dashboard/master/topik/add', $data);
@@ -284,18 +283,15 @@ class Admin extends Controller
 			// hitung topik yang nomornya >= dengan nomor yang diinput
 			$count_data_topics = $this->master->count_data('topics', ['number >=' => $this->request->getPost('number'), 'class_id' => $this->request->getPost('class_id')]);
 			// jika ada nomor yang lebih besar dari nomor yang diinput
-			if($count_data_topics > 0)
-			{
+			if ($count_data_topics > 0) {
 				$get_all_number = $this->master->get_select('topics', 'topic_id, number', ['class_id' => $this->request->getPost('class_id'), 'number >=' => $this->request->getPost('number')])->getResult();
 				$topic_id = [];
 				$number = [];
-				foreach ($get_all_number as $row)
-				{
+				foreach ($get_all_number as $row) {
 					$topic_id[] = $row->topic_id;
 					$number[] = $row->number;
 				}
-				for ($i=0; $i < $count_data_topics; $i++) 
-				{ 
+				for ($i = 0; $i < $count_data_topics; $i++) {
 					$data[$i] = [
 						'topic_id' => $topic_id[$i],
 						// semua nomor yang >= dari inputan number ditambah 1 agar tidak ada yang bentrok
@@ -343,7 +339,7 @@ class Admin extends Controller
 			helper('form');
 			$data = [
 				'title' => 'Master Topik',
-			'segment' => $this->request->uri->getSegments(),
+				'segment' => $this->request->uri->getSegments(),
 				'listClasses' => $this->master->get_all('classes')->getResult(),
 				'topic' => $this->master->get_topik_by_slug($slug_class, $slug_topic)->getRow(),
 				'slug_class' => $slug_class,
@@ -366,18 +362,15 @@ class Admin extends Controller
 			// hitung topik yang nomornya >= dengan nomor yang diinput
 			$count_data_topics = $this->master->count_data('topics', ['number >=' => $this->request->getPost('number'), 'class_id' => $getIdClasses->class_id]);
 			// jika ada nomor yang lebih besar dari nomor yang diinput
-			if($count_data_topics > 0)
-			{
+			if ($count_data_topics > 0) {
 				$get_all_number = $this->master->get_select('topics', 'topic_id, number', ['class_id' => $this->request->getPost('class_id'), 'number >=' => $this->request->getPost('number')])->getResult();
 				$topic_id = [];
 				$number = [];
-				foreach ($get_all_number as $row)
-				{
+				foreach ($get_all_number as $row) {
 					$topic_id[] = $row->topic_id;
 					$number[] = $row->number;
 				}
-				for ($i=0; $i < $count_data_topics; $i++) 
-				{ 
+				for ($i = 0; $i < $count_data_topics; $i++) {
 					$data[$i] = [
 						'topic_id' => $topic_id[$i],
 						// semua nomor yang >= dari inputan number ditambah 1 agar tidak ada yang bentrok
@@ -398,7 +391,7 @@ class Admin extends Controller
 	}
 
 	public function delete_topik($slug_class, $slug_topic)
-	{	
+	{
 		// ambil id kelas dari slug kelas
 		$getIdClasses = $this->master->get_field('classes', ['slug' => $slug_class])->getRow();
 		// ambil id topik dari id kelas dan slug topik
@@ -423,7 +416,7 @@ class Admin extends Controller
 		];
 		echo view('dashboard/master/user/view', $data);
 	}
-	
+
 	public function paket()
 	{
 		$data = [
@@ -458,12 +451,11 @@ class Admin extends Controller
 			'detail' => $this->request->getPost('detail'),
 			'duration' => $this->request->getPost('duration')
 		];
-		if (!$validation->run($input, 'package')) 
-		{
+		if (!$validation->run($input, 'package')) {
 			helper(['form', 'url']);
 			$data = [
 				'title' => 'Master Paket',
-			'segment' => $this->request->uri->getSegments(),
+				'segment' => $this->request->uri->getSegments(),
 				'listClass' => $this->master->get_all('classes')->getResult()
 			];
 			echo view('dashboard/master/paket/add', $data);
@@ -494,10 +486,9 @@ class Admin extends Controller
 			// insert data paket ke table packages
 			$query = $this->master->insert_data('packages', $insert_package);
 			// jika insert berhasil 
-			if($query)
-			{
+			if ($query) {
 				$package_id[0] = $insert_package['package_id'];
-				for ($i=0; $i <= $length_class; $i++) { 
+				for ($i = 0; $i <= $length_class; $i++) {
 					$data[$i] = array(
 						'package_id' => $package_id[0],
 						'class_id' => $class[0][$i],
@@ -513,11 +504,10 @@ class Admin extends Controller
 					session()->setFlashdata('message', '<div class="alert alert-danger">Gagal menambahkan paket</div>');
 					return redirect()->route('admin/paket/tambah');
 				}
-			}else {
+			} else {
 				session()->setFlashdata('message', '<div class="alert alert-danger">Gagal menambahkan paket</div>');
 				return redirect()->route('admin/paket/tambah');
 			}
-			
 		}
 	}
 
@@ -545,12 +535,11 @@ class Admin extends Controller
 			'duration' => $this->request->getPost('duration'),
 			'detail' => $this->request->getPost('detail'),
 		];
-		if (!$validation->run($input, 'edit_package')) 
-		{
+		if (!$validation->run($input, 'edit_package')) {
 			helper('form');
 			$data = [
 				'title' => 'Master Paket',
-			'segment' => $this->request->uri->getSegments(),
+				'segment' => $this->request->uri->getSegments(),
 				'slug' => $slug,
 				'package' => $this->master->get_field('packages', ['slug' => $slug])->getRow(),
 				'class_package' => $this->master->get_field('packages', ['slug' => $slug])->getResult(),
@@ -578,15 +567,13 @@ class Admin extends Controller
 			// jika jumlah id kelas di table class_packages < jumlah id kelas yang diinput
 			// update satu per satu id kelas di table class_packages
 			// kemudian insert id kelas (karena jumlah di db < jumlah inputan)
-			if($count_data_db < $length_class)
-			{
+			if ($count_data_db < $length_class) {
 				$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
 				$class_package_id = [];
 				foreach ($class_packages as $row) {
 					$class_package_id[] = $row->class_package_id;
 				}
-				if($avatar->getName() == '')
-				{
+				if ($avatar->getName() == '') {
 					$update_package = array(
 						'package_name' => $this->request->getPost('package_name'),
 						'slug' => url_title(strtolower($this->request->getPost('package_name'))),
@@ -595,24 +582,21 @@ class Admin extends Controller
 						'duration' => $this->request->getPost('duration'),
 					);
 
-					for ($i=0; $i <= ($count_data_db - 1); $i++) 
-					{ 
+					for ($i = 0; $i <= ($count_data_db - 1); $i++) {
 						$update_class[$i] = array(
 							'class_package_id' => $class_package_id[$i],
 							'package_id' => $package->package_id,
 							'class_id' => $class[0][$i],
 						);
 					}
-					for ($i= $count_data_db; $i <= ($length_class - 1); $i++) 
-					{
+					for ($i = $count_data_db; $i <= ($length_class - 1); $i++) {
 						$insert_class[$i] = array(
 							'package_id' => $package->package_id,
 							'class_id' => $class[0][$i],
 						);
 					}
 				} else {
-					if($file_name != NULL)
-					{
+					if ($file_name != NULL) {
 						unlink('assets/uploads/packages/' . $file_name);
 					}
 					$update_package = array(
@@ -623,16 +607,14 @@ class Admin extends Controller
 						'duration' => $this->request->getPost('duration'),
 						'img' => $name[0]
 					);
-					for ($i=0; $i <= ($count_data_db - 1); $i++) 
-					{ 
+					for ($i = 0; $i <= ($count_data_db - 1); $i++) {
 						$update_class[$i] = array(
 							'class_package_id' => $class_package_id[$i],
 							'package_id' => $package->package_id,
 							'class_id' => $class[0][$i],
 						);
 					}
-					for ($i= $count_data_db; $i <= ($length_class - 1); $i++) 
-					{ 
+					for ($i = $count_data_db; $i <= ($length_class - 1); $i++) {
 						$insert_class[$i] = array(
 							'package_id' => $package->package_id,
 							'class_id' => $class[0][$i],
@@ -641,10 +623,8 @@ class Admin extends Controller
 					$avatar->move('assets/uploads/packages/', $name[0]);
 				}
 				$query_update_package = $this->master->update_data('packages', ['package_id' => $package->package_id], $update_package);
-				if($query_update_package)
-				{
-					if($class_package_id[0] == $update_class[0]['class_package_id'])
-					{
+				if ($query_update_package) {
+					if ($class_package_id[0] == $update_class[0]['class_package_id']) {
 						$query = $this->master->update_data_batch('class_packages', $update_class, 'class_package_id');
 						$query = $this->master->insert_data_batch('class_packages', $insert_class);
 					} else {
@@ -652,9 +632,7 @@ class Admin extends Controller
 						$query = $this->master->insert_data_batch('class_packages', $insert_class);
 					}
 				}
-				
-			} else if($count_data_db > $length_class) 
-			{
+			} else if ($count_data_db > $length_class) {
 				// jika jumlah id kelas di table class_packages > jumlah id kelas yang diinput
 				// masukkan semua id kelas yang ada di class_packages dan id kelas yang diinput ke dalam array
 				// cek id kelas yang hanya ada di array yang menampung data dari db
@@ -662,8 +640,7 @@ class Admin extends Controller
 				// kemudian update semua id kelas dari paket tersebut
 				$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
 				$class_id = [];
-				foreach ($class_packages as $row) 
-				{
+				foreach ($class_packages as $row) {
 					$class_id[] = $row->class_id;
 				}
 				$diff = array_diff($class_id, $class[0]);
@@ -672,17 +649,14 @@ class Admin extends Controller
 					$arr_diff[] = $row;
 				};
 				$delete = $this->master->delete_array('class_packages', 'class_id', $arr_diff);
-				if($delete)
-				{
+				if ($delete) {
 					$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
 					$class_package_id = [];
-					foreach ($class_packages as $row) 
-					{
+					foreach ($class_packages as $row) {
 						$class_package_id[] = $row->class_package_id;
 					}
 				}
-				if($avatar->getName() == '')
-				{
+				if ($avatar->getName() == '') {
 					$update_package = array(
 						'package_name' => $this->request->getPost('package_name'),
 						'slug' => url_title(strtolower($this->request->getPost('package_name'))),
@@ -690,7 +664,7 @@ class Admin extends Controller
 						'detail' => $this->request->getPost('detail'),
 						'duration' => $this->request->getPost('duration'),
 					);
-					for ($i=0; $i <= ($length_class - 1); $i++) { 
+					for ($i = 0; $i <= ($length_class - 1); $i++) {
 						$update_class[$i] = array(
 							'class_package_id' => $class_package_id[$i],
 							'package_id' => $package->package_id,
@@ -699,8 +673,7 @@ class Admin extends Controller
 					}
 				} else {
 					$file_name = $this->master->get_field('packages', ['slug' => $slug])->getRow()->img;
-					if($file_name != NULL)
-					{
+					if ($file_name != NULL) {
 						unlink('assets/uploads/packages/' . $file_name);
 					}
 					$update_package = array(
@@ -711,8 +684,7 @@ class Admin extends Controller
 						'duration' => $this->request->getPost('duration'),
 						'img' => $name[0]
 					);
-					for ($i=0; $i <= ($length_class - 1); $i++) 
-					{ 
+					for ($i = 0; $i <= ($length_class - 1); $i++) {
 						$update_class[$i] = array(
 							'class_package_id' => $class_package_id[$i],
 							'package_id' => $package->package_id,
@@ -722,24 +694,20 @@ class Admin extends Controller
 					$avatar->move('assets/uploads/packages/', $name[0]);
 				}
 				$query = $this->master->update_data('packages', ['slug' => $slug], $update_package);
-				
+
 				$query = $this->master->update_data_batch('class_packages', $update_class, 'class_package_id');
 				$query = TRUE;
-
-			} else if($count_data_db == $length_class)
-			{
+			} else if ($count_data_db == $length_class) {
 				// jika jumlah id kelas di table class_packages == jumlah id kelas yang diinput
 				// update semua id kelas dari paket tersebut
 				$class_packages = $this->master->get_field('class_packages', ['package_id' => $package->package_id])->getResult();
 				$class_package_id = [];
 				$package_id = [];
-				foreach ($class_packages as $row) 
-				{
+				foreach ($class_packages as $row) {
 					$class_package_id[] = $row->class_package_id;
 					$package_id[] = $row->package_id;
 				}
-				if($avatar->getName() == '')
-				{
+				if ($avatar->getName() == '') {
 					$update_package = array(
 						'package_name' => $this->request->getPost('package_name'),
 						'slug' => url_title(strtolower($this->request->getPost('package_name'))),
@@ -747,8 +715,7 @@ class Admin extends Controller
 						'detail' => $this->request->getPost('detail'),
 						'duration' => $this->request->getPost('duration'),
 					);
-					for ($i=0; $i <= ($length_class - 1); $i++) 
-					{ 
+					for ($i = 0; $i <= ($length_class - 1); $i++) {
 						$update_class[$i] = array(
 							'class_package_id' => $class_package_id[$i],
 							'package_id' => $package->package_id,
@@ -757,8 +724,7 @@ class Admin extends Controller
 					}
 				} else {
 					$file_name = $this->master->get_field('packages', ['slug' => $slug])->getRow()->img;
-					if($file_name != NULL)
-					{
+					if ($file_name != NULL) {
 						unlink('assets/uploads/packages/' . $file_name);
 					}
 					$update_package = array(
@@ -769,8 +735,7 @@ class Admin extends Controller
 						'duration' => $this->request->getPost('duration'),
 						'img' => $name[0]
 					);
-					for ($i=0; $i <= ($length_class - 1); $i++) 
-					{ 
+					for ($i = 0; $i <= ($length_class - 1); $i++) {
 						$update_class[$i] = array(
 							'class_package_id' => $class_package_id[$i],
 							'package_id' => $package->package_id,
@@ -779,12 +744,12 @@ class Admin extends Controller
 					}
 					$avatar->move('assets/uploads/packages/', $name[0]);
 				}
-				
+
 				$query = $this->master->update_data('packages', ['slug' => $slug], $update_package);
 				$query = $this->master->update_data_batch('class_packages', $update_class, 'class_package_id');
 				$query = TRUE;
 			}
-			
+
 			if ($query) {
 				session()->setFlashdata('message', '<div class="alert alert-success">Berhasil mengedit paket</div>');
 				return redirect()->route('admin/paket');
@@ -831,7 +796,7 @@ class Admin extends Controller
 		];
 		echo view('dashboard/master/diskon/add', $data);
 	}
-	
+
 	public function proses_tambah_diskon()
 	{
 		helper('form');
@@ -854,19 +819,17 @@ class Admin extends Controller
 			// cek apakah ada kode promo yang sama di db
 			$check = $this->master->get_select('discounts', 'promo_code', ['promo_code' => $this->request->getPost('promo_code')])->getRow();
 			// jika tidak ada
-			if(!$check)
-			{
+			if (!$check) {
 				// insert ke db
 				$query = $this->master->insert_data('discounts', $input);
-				if ($query) 
-				{
+				if ($query) {
 					session()->setFlashdata('message', '<div class="alert alert-success">Berhasil menambahkan promo</div>');
 					return redirect()->route('admin/diskon');
 				} else {
 					session()->setFlashdata('message', '<div class="alert alert-danger">Gagal menambahkan promo</div>');
 					return redirect()->route('admin/diskon/tambah');
 				}
-			}else{
+			} else {
 				session()->setFlashdata('message', '<div class="alert alert-danger">Kode promo sudah ada</div>');
 				return redirect()->route('admin/diskon/tambah');
 			}
@@ -883,7 +846,7 @@ class Admin extends Controller
 		];
 		echo view('dashboard/master/diskon/edit', $data);
 	}
-	
+
 	public function proses_edit_diskon($code)
 	{
 		helper('form');
@@ -903,9 +866,8 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/diskon/add', $data);
 		} else {
-			$query = $this->master->update_data('discounts',['promo_code' => $code], $input);
-			if ($query) 
-			{
+			$query = $this->master->update_data('discounts', ['promo_code' => $code], $input);
+			if ($query) {
 				session()->setFlashdata('message', '<div class="alert alert-success">Berhasil mengubah promo</div>');
 				return redirect()->route('admin/diskon');
 			} else {
@@ -941,10 +903,10 @@ class Admin extends Controller
 	{
 		// ambil email user dari id user di table transactions
 		$user = $this->master->get_join('transactions', 'users.email', 'users', 'users.user_id=transactions.user_id', ['transactions.transaction_id' => $id])->getRow();
-		
+
 		// START BUAT TOKEN AIKTIVASI
-		$seed = str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ'); 
-		shuffle($seed); 
+		$seed = str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+		shuffle($seed);
 		$rand = '';
 		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
 
@@ -966,7 +928,7 @@ class Admin extends Controller
 				'protocol'  => 'smtp',
 				'SMTPHost' => 'smtp.gmail.com',
 				'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-				'SMTPPass'   => 'gantipassword',  // Password gmail
+				'SMTPPass'   => 'passwordkamu',  // Password gmail
 				'smtpCrypto' => 'ssl',
 				'smtpPort'   => 465,
 				'CRLF'    => "\r\n",
@@ -979,11 +941,10 @@ class Admin extends Controller
 			$email->setSubject('Token kamu');
 			$email->setMessage('
 			<p>Terima kasih telah melakukan pembayaran. Silahkan redeem token di bawah ini di halaman redeem.</p>
-			<p style="color:red;"><b>' . $rand .'</b></p>
+			<p style="color:red;"><b>' . $rand . '</b></p>
 			');
 
-			if($email->send())
-			{
+			if ($email->send()) {
 				session()->setFlashdata('message', '<div class="alert alert-success">Proses transaksi berhasil!</div>');
 				return redirect()->route('admin/transaksi');
 			} else {
@@ -996,5 +957,4 @@ class Admin extends Controller
 			return redirect()->route('admin/transaksi');
 		}
 	}
-	
 }

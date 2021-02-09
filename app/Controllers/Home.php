@@ -1,8 +1,11 @@
-<?php namespace App\Controllers;
+<?php
+
+namespace App\Controllers;
 
 use App\Models\Master_model;
 use Class_model;
 use Package_model;
+
 class Home extends BaseController
 {
     public function __construct()
@@ -61,15 +64,13 @@ class Home extends BaseController
             'email' => $this->request->getPost('email')
         ];
 
-        if(!$validation->run($input, 'forgot'))
-        {
+        if (!$validation->run($input, 'forgot')) {
             helper('form');
             $data = [
                 'title' => 'Forgot Password',
             ];
             echo view('auth/forgot_user', $data);
-        }else
-        {
+        } else {
             // helper encrypt 
             helper('my_encrypt');
             $encrypt = here_encrypt($this->request->getPost('email'));
@@ -80,7 +81,7 @@ class Home extends BaseController
                 'protocol'  => 'smtp',
                 'SMTPHost' => 'smtp.gmail.com',
                 'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-                'SMTPPass'   => 'gantipassword',  // Password gmail
+                'SMTPPass'   => 'passwordkamu',  // Password gmail
                 'smtpCrypto' => 'ssl',
                 'smtpPort'   => 465,
                 'CRLF'    => "\r\n",
@@ -93,10 +94,9 @@ class Home extends BaseController
             $email->setSubject('Verification Link - Forgot Password');
             $email->setMessage('
             <p>Klik link di bawah ini untuk membuat password baru.</p>
-            <p><a href="http://localhost:8080/user/new-password/'.$encrypt['encode_replace'].'">Reset Password</a></p>');
+            <p><a href="http://localhost:8080/user/new-password/' . $encrypt['encode_replace'] . '">Reset Password</a></p>');
 
-            if($email->send())
-            {
+            if ($email->send()) {
                 session()->setFlashdata('message', '<div class="alert alert-info">Cek E-mail kamu!</div>');
                 return redirect()->route('user/login');
             } else {
@@ -121,7 +121,7 @@ class Home extends BaseController
     {
         helper(['form', 'my_encrypt']);
         $email = here_decrypt($encode);
-        
+
         $input = [
             'password' => $this->request->getPost('password'),
             're_password' => $this->request->getPost('re_password'),
@@ -130,8 +130,7 @@ class Home extends BaseController
         $data = [
             'title' => 'Forgot Password',
         ];
-        if (!$validation->run($input, 'new_password'))
-        {
+        if (!$validation->run($input, 'new_password')) {
             echo view('auth/new_password_user', $data);
         } else {
             // hash inputan password
@@ -139,8 +138,7 @@ class Home extends BaseController
             // update password berdasarkan email user
             $query = $this->master->update_data('users', ['email' => $email], ['password' => $password]);
 
-            if($query) 
-            {
+            if ($query) {
                 session()->setFlashdata('message', '<div class="alert alert-success">Password berhasil diubah! Silahkan login.</div>');
                 return redirect()->route('user/login');
             } else {
@@ -148,7 +146,6 @@ class Home extends BaseController
                 return redirect()->route('user/login');
             }
         }
-        
     }
 
     public function courses()
@@ -203,19 +200,19 @@ class Home extends BaseController
         $class_list = $this->master->get_join('classes', 'classes.class_id, classes.class_name, classes.slug, classes.img', 'class_packages', 'class_packages.class_id=classes.class_id', ['class_packages.package_id' => $course->package_id])->getResult();
 
         // cek user yang sedang login apakah sudah membeli paket
-        $package = $this->master->get_select('transactions', 'id', ['option' => 'package',
-                                                                    'user_id' => session()->get('user_id'),
-                                                                    'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
-                                                                    ])->getRow();
+        $package = $this->master->get_select('transactions', 'id', [
+            'option' => 'package',
+            'user_id' => session()->get('user_id'),
+            'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
+        ])->getRow();
+
         $check = is_object($package);
-        if($check)
-        {
+        if ($check) {
             // jika ada data di transactions
-            if($package->id == $course->package_id)
-            {
+            if ($package->id == $course->package_id) {
                 // sudah membeli paket
                 $status = '1';
-            } 
+            }
         } else {
             // belum membeli paket
             $status = '0';
@@ -224,12 +221,10 @@ class Home extends BaseController
         // menampilkan semua kelas dan topik dari paket
         $nama_kelas = array();
         $nama_topik = array();
-        foreach ($class_list as $class_key => $class) 
-        {
+        foreach ($class_list as $class_key => $class) {
             $nama_kelas[$class_key]['nama_kelas'] = $class->class_name;
             $topics = $this->master->get_select('topics', 'topic_name', ['class_id' => $class->class_id])->getResult();
-            foreach ($topics as $topic) 
-            {
+            foreach ($topics as $topic) {
                 $nama_topik[$class_key][] = $topic->topic_name;
             }
         }
@@ -244,31 +239,30 @@ class Home extends BaseController
         ];
         echo view('user/single-course-package', $data);
     }
-    
+
     public function single_course_class($slug)
     {
         helper(['form', 'my_timezone']);
-        
+
         $course = $this->master->get_field('classes', ['slug' => $slug])->getRow();
 
         // cek apakah kelas sudah dibeli
-        $class = $this->master->get_select('transactions', 'id', ['option' => 'class',
-                                                                      'id' => $course->class_id,
-                                                                      'user_id' => session()->get('user_id'),
-                                                                      'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
-                                                                    ])->getResult();
-        $count_class = $this->master->count_data('transactions', ['option' => 'class',
-                                                                  'id' => $course->class_id,
-                                                                  'user_id' => session()->get('user_id'),
-                                                                  'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
-                                                                 ]);
+        $class = $this->master->get_select('transactions', 'id', [
+            'option' => 'class',
+            'id' => $course->class_id,
+            'user_id' => session()->get('user_id'),
+            'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
+        ])->getResult();
+        $count_class = $this->master->count_data('transactions', [
+            'option' => 'class',
+            'id' => $course->class_id,
+            'user_id' => session()->get('user_id'),
+            'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
+        ]);
         // jika sudah membeli
-        if($count_class > 0)
-        {
-            for ($i=0; $i < $count_class; $i++) 
-            { 
-                if($class[$i]->id == $course->class_id)
-                {
+        if ($count_class > 0) {
+            for ($i = 0; $i < $count_class; $i++) {
+                if ($class[$i]->id == $course->class_id) {
                     // sudah membeli
                     $status = '1';
                     break;
@@ -277,32 +271,30 @@ class Home extends BaseController
         } else {
             // belum membeli
             $status = '0';
-        }      
+        }
 
         // jika belum membeli kelas, maka cek di paket
         // apakah ada paket yang memiliki kelas ini?
-        if($status == '0')
-        {
-            $package = $this->master->get_select('transactions', 'id', ['option' => 'package',
-                                                                    'user_id' => session()->get('user_id'),
-                                                                    'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
-                                                                    ])->getResult();
-            $count_package = $this->master->count_data('transactions', ['option' => 'package',
-                                                                        'user_id' => session()->get('user_id'),
-                                                                        'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
-                                                                        ]);
-            
+        if ($status == '0') {
+            $package = $this->master->get_select('transactions', 'id', [
+                'option' => 'package',
+                'user_id' => session()->get('user_id'),
+                'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
+            ])->getResult();
+            $count_package = $this->master->count_data('transactions', [
+                'option' => 'package',
+                'user_id' => session()->get('user_id'),
+                'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
+            ]);
+
             // cek semua paket yang dibeli
-            for ($i=0; $i < $count_package; $i++) 
-            { 
+            for ($i = 0; $i < $count_package; $i++) {
                 $class_from_package[] = $this->master->get_select('class_packages', 'class_id', ['package_id' => $package[$i]->id])->getResult();
 
                 // cek satu per satu kelas di dalam paket
-                for ($j=0; $j < count($class_from_package[$i]); $j++) 
-                { 
+                for ($j = 0; $j < count($class_from_package[$i]); $j++) {
                     // jika ada kelas di dalam paket yang sama id nya dengan kelas yang sedang dilihat
-                    if($class_from_package[$i][$j]->class_id == $course->class_id)
-                    {
+                    if ($class_from_package[$i][$j]->class_id == $course->class_id) {
                         // status sudah membeli kelas
                         $status = '1';
                         // keluar dari looping
@@ -312,8 +304,7 @@ class Home extends BaseController
                         $status = '0';
                     }
                 }
-                if($status == '1')
-                {
+                if ($status == '1') {
                     // keluar dari looping
                     break;
                 }
@@ -332,8 +323,7 @@ class Home extends BaseController
     public function check_promo()
     {
         $code = $this->request->getPost('promo_code');
-        if($code == NULL)
-        {
+        if ($code == NULL) {
             $discount = 0;
             $data_sess = [
                 'discount' => $discount,
@@ -341,15 +331,13 @@ class Home extends BaseController
             ];
             session()->set($data_sess);
             return redirect()->route('cart');
-        }else{
+        } else {
             // cari kode promo di db berdasarkan inputan
             $promo = $this->master->get_select('discounts', 'discount_id, promo_code, discount, from, to', ['promo_code' => $code])->getRow();
-            if($promo)
-            {
-                date_default_timezone_set("Asia/Jakarta");  
+            if ($promo) {
+                date_default_timezone_set("Asia/Jakarta");
                 // jika ada promo yang tanggal awal nya lebih kecil dan tanggal berakhirnya lebih besar dari sekarang              
-                if(($promo->from < date('Y-m-d H:i:s')) AND ($promo->to > date('Y-m-d H:i:s')))
-                {
+                if (($promo->from < date('Y-m-d H:i:s')) and ($promo->to > date('Y-m-d H:i:s'))) {
                     // masukkan data diskon ke session user
                     $discount = $promo->discount;
                     $data_sess = [
@@ -359,11 +347,11 @@ class Home extends BaseController
                     session()->set($data_sess);
                     // arahkan user ke cart
                     return redirect()->route('cart');
-                }else{
+                } else {
                     session()->setFlashdata('message', '<div class="alert alert-danger">Kode promo tidak dapat digunakan!</div>');
                     return redirect()->back();
                 }
-            }else {
+            } else {
                 session()->setFlashdata('message', '<div class="alert alert-danger">Kode promo salah!</div>');
                 return redirect()->back();
             }
@@ -378,8 +366,7 @@ class Home extends BaseController
         $slug = $url[5];
         $rand = rand(100, 199);
         // jika segmen url ke 4 == package
-        if($category == 'package')
-        {
+        if ($category == 'package') {
             // dapatkan data package
             $course = $this->master->get_select('packages', 'package_id, package_name, price, img', ['slug' => $slug])->getRow();
             // dapatkan list kelas dari package
@@ -387,13 +374,13 @@ class Home extends BaseController
             // total harga
             $total = $course->price + $rand - ($course->price * session()->get('discount') / 100);
             $data = [
-                    'title' => 'Pembelian Kursus - Online Course',
-                    'course' => $course,
-                    'class_list' => $class_list,
-                    'random_number' => $rand,
-                    'discount' => session()->get('discount'),
-                    'price' => $total
-                ];
+                'title' => 'Pembelian Kursus - Online Course',
+                'course' => $course,
+                'class_list' => $class_list,
+                'random_number' => $rand,
+                'discount' => session()->get('discount'),
+                'price' => $total
+            ];
             // masukkan data berikut ke session
             $data_sess = [
                 'type' => '01', // 01 untuk package (nantinya digunakan di transaction_id)
@@ -404,9 +391,8 @@ class Home extends BaseController
             session()->set($data_sess);
             echo view('user/cart-package', $data);
 
-        // jika segmen url ke 4 == class
-        }else if($category == 'class') 
-        {
+            // jika segmen url ke 4 == class
+        } else if ($category == 'class') {
             // dapatkan data kelas
             $course = $this->master->get_select('classes', 'class_name, class_id, price, img', ['slug' => $slug])->getRow();
             // total harga
@@ -427,7 +413,7 @@ class Home extends BaseController
             ];
             session()->set($data_sess);
             echo view('user/cart-class', $data);
-        }else{
+        } else {
             echo 'INVALID';
             die;
         }
@@ -435,13 +421,11 @@ class Home extends BaseController
 
     public function buy()
     {
-        if(session()->get('option') == 'package')
-        {
+        if (session()->get('option') == 'package') {
             // ambil data package terakhir dari table transactions
             $transactions = $this->master->get_last_insert_id_where('transactions', 'transaction_id', ['option' => 'package'])->getRow();
             // jika 2 angka terakhir = 99
-            if(substr($transactions->transaction_id, -2) == 99)
-            {
+            if (substr($transactions->transaction_id, -2) == 99) {
                 // id = 1
                 $id = 1;
             } else {
@@ -457,12 +441,11 @@ class Home extends BaseController
                 'discount_id' => session()->get('discount_id'),
                 'amount' => session()->get('price')
             ];
-        } else if(session()->get('option') == 'class') {
+        } else if (session()->get('option') == 'class') {
             // ambil data package terakhir dari table transactions
             $transactions = $this->master->get_last_insert_id_where('transactions', 'transaction_id', ['option' => 'class'])->getRow();
             // jika 2 angka terakhir = 99
-            if(substr($transactions->transaction_id, -2) == 99)
-            {
+            if (substr($transactions->transaction_id, -2) == 99) {
                 // id = 1
                 $id = 1;
             } else {
@@ -481,8 +464,7 @@ class Home extends BaseController
         }
         $query = $this->master->insert_data('transactions', $buy);
         session()->remove(['discount', 'discount_id', 'type', 'price', 'package_id', 'option']);
-        if($query) 
-        {
+        if ($query) {
             session()->setFlashdata('message', '<div class="alert alert-success">Berhasil melakukan pemesanan. Silahkan lakukan pembayaran kemudian isi form berikut. <a href="' . site_url('user/konfirmasi-pembayaran') . '">Klik disini</a></div>');
             return redirect()->route('user/invoice');
         } else {
@@ -515,8 +497,7 @@ class Home extends BaseController
         $input = [
             'invoice_id' => $this->request->getPost('invoice_id')
         ];
-        if(!$validation->run($input, 'invoice'))
-        {
+        if (!$validation->run($input, 'invoice')) {
             helper('form');
             $data = [
                 'title' => 'Konfirmasi Pembayaran - Online Course',
@@ -525,13 +506,11 @@ class Home extends BaseController
         } else {
             // data transaksi berdasarkan id transaksi
             $query = $this->master->get_select('transactions', 'transaction_id', ['transaction_id' => $this->request->getPost('invoice_id')])->getRow();
-            if($query)
-            {
+            if ($query) {
                 // update waiting confirmation ke 1
                 // akan muncul di menu admin untuk dikonfirmasi
                 $update = $this->master->update_data('transactions', ['transaction_id' => $this->request->getPost('invoice_id')], ['waiting_confirmation' => '1']);
-                if($update)
-                {
+                if ($update) {
                     session()->setFlashdata('message', '<div class="alert alert-success">Berhasil submit invoice. Silahkan tunggu.</div>');
                     return redirect()->route('user/invoice');
                 } else {
@@ -543,7 +522,6 @@ class Home extends BaseController
                 return redirect()->route('user/konfirmasi-pembayaran');
             }
         }
-        
     }
 
     public function redeem()
@@ -560,15 +538,13 @@ class Home extends BaseController
         // cari token dari inputan user di table transactions
         $check = $this->master->get_select('transactions', 'id, option, token', ['token' => $this->request->getPost('token'), 'user_id' => session()->get('user_id')])->getRow();
         // jika ada
-        if($check)
-        {
+        if ($check) {
             // jika token dari transaksi package
-            if($check->option == 'package')
-            {
+            if ($check->option == 'package') {
                 // ambil data durasi paket di table package
                 $learning = $this->master->get_select('packages', 'duration', ['package_id' => $check->id])->getRow();
-            // jika token dari transaksi package
-            } else if($check->option == 'class'){
+                // jika token dari transaksi package
+            } else if ($check->option == 'class') {
                 // ambil data durasi kelas di table classes
                 $learning = $this->master->get_select('classes', 'duration', ['class_id' => $check->id])->getRow();
             } else {
@@ -577,19 +553,19 @@ class Home extends BaseController
 
             // update data untuk table transactions
             $data = [
-                'is_token_activated' => '1', 
+                'is_token_activated' => '1',
                 'token_activated_date' => date("Y-m-d h:i:s"),
                 'course_end_date' => date('Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s') . ' + ' . $learning->duration . ' days')) // tanggal sekarang ditambah durasi paket/kelas
             ];
             $query = $this->master->update_data('transactions', ['token' => $this->request->getPost('token')], $data);
             if ($query) {
-				session()->setFlashdata('message', '<div class="alert alert-success">Berhasil redeem kelas. <a href="' . site_url('home/dashboard') . '">Ke dashboard sekarang</a></div>');
-				return redirect()->route('redeem');
-			} else {
-				session()->setFlashdata('message', '<div class="alert alert-danger">Gagal redeem token! Silahkan coba kembali</div>');
-				return redirect()->route('redeem');
-			}
-        }else{
+                session()->setFlashdata('message', '<div class="alert alert-success">Berhasil redeem kelas. <a href="' . site_url('home/dashboard') . '">Ke dashboard sekarang</a></div>');
+                return redirect()->route('redeem');
+            } else {
+                session()->setFlashdata('message', '<div class="alert alert-danger">Gagal redeem token! Silahkan coba kembali</div>');
+                return redirect()->route('redeem');
+            }
+        } else {
             session()->setFlashdata('message', '<div class="alert alert-danger">Gagal redeem token! Silahkan coba kembali</div>');
             return redirect()->route('redeem');
         }
@@ -615,10 +591,9 @@ class Home extends BaseController
         // cek tanggal berakhir paket 
         $end_date = $this->master->check_course_end_date(session()->get('user_id'), $package->package_id)->getRow();
         // jika tanggal berakhir paket sudah lewat
-        if($end_date->course_end_date < my_timezone()->format('Y-m-d H:i:s'))
-        {
+        if ($end_date->course_end_date < my_timezone()->format('Y-m-d H:i:s')) {
             $value_check = '1';
-        // jika belum
+            // jika belum
         } else {
             $value_check = '0';
         }
@@ -647,8 +622,7 @@ class Home extends BaseController
     public function learn($class, $topic, $done = null)
     {
         $class = $this->master->get_field('classes', ['slug' => $class])->getRow();
-        if($done == FALSE)
-        {
+        if ($done == FALSE) {
             $data = [
                 'title' => 'Dashboard - Online Course',
                 'className' => $class->class_name,
@@ -658,12 +632,11 @@ class Home extends BaseController
             echo view('user/dashboard/learn', $data);
         } else {
             // jika segmen url 3 = done
-            if($this->request->uri->getSegments()[3] == 'done')
-            {
+            if ($this->request->uri->getSegments()[3] == 'done') {
                 $arr_topics = [];
                 $topics = $this->master->get_select('topics', 'topic_id, class_id, slug', ['class_id' => $class->class_id])->getResult();
                 $this_topic = $this->master->get_select('topics', 'topic_id', ['slug' => $topic, 'class_id' => $class->class_id])->getRow();
-                
+
                 // insert data ke passes
                 $data = [
                     'class_id' => $class->class_id,
@@ -672,29 +645,26 @@ class Home extends BaseController
                 ];
                 $query = $this->master->insert_data('passes', $data);
                 // jika berhasil insert
-                if($query)
-                {
+                if ($query) {
                     foreach ($topics as $row) {
                         $arr_topics[] = $row->slug;
                     }
                     // cari slug topik di dalam arr_topics
                     $this_topic = array_search($this_topic->topic_id, $arr_topics, true);
                     // jika ada topik selanjutnya dari kelas ini
-                    if(isset($arr_topics[$this_topic + 1]))
-                    {
+                    if (isset($arr_topics[$this_topic + 1])) {
                         // slug topik selanjutnya
                         $next = $arr_topics[$this_topic + 1];
                         // redirect ke topik selanjutnya
-                        return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $next)); 
+                        return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $next));
                     } else {
-                        return $this->response->redirect(site_url('topics/' . $class->slug)); 
+                        return $this->response->redirect(site_url('topics/' . $class->slug));
                     }
                 } else {
                     echo 'gagal';
                 }
-                               
             } else {
-				return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $topic));
+                return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $topic));
             }
         }
     }
@@ -705,30 +675,26 @@ class Home extends BaseController
         $package = $this->master->get_select('transactions', 'id', ['option' => 'package', 'user_id' => session()->get('user_id')])->getResult();
         // hitung semua data paket yang sudah dibeli user
         $count_package = $this->master->count_data('transactions', ['option' => 'package', 'user_id' => session()->get('user_id')]);
-        
+
         $class_data = []; // array penampung id kelas
         // cek setiap package
-        for ($i=0; $i < $count_package; $i++) 
-        { 
+        for ($i = 0; $i < $count_package; $i++) {
             // ambil data kelas dari paket yang sedang dicek
             $class_from_package[] = $this->master->get_select('class_packages', 'class_id', ['package_id' => $package[$i]->id])->getResult();
             // hitung total kelas dari paket yang sedang dicek
             $count_class_from_package = $this->master->count_data('class_packages', ['package_id' => $package[$i]->id]);
-            
+
             // looping kelas dari paket yang sedang dicek
-            for ($j=0; $j < $count_class_from_package; $j++) 
-            { 
+            for ($j = 0; $j < $count_class_from_package; $j++) {
                 // hitung topik dari kelas yang sedang dicek
                 $count_topics_package[$i][$j] = $this->master->count_data('topics', ['class_id' => $class_from_package[$i][$j]->class_id]);
                 // hitung topik yang sudah dilewati dari kelas yang sedang dicek
                 $count_passes_package[$i][$j] = $this->master->count_data('passes', ['class_id' => $class_from_package[$i][$j]->class_id]);
 
                 // jika jumlah topik dan jumlah topik yang sudah dilewati sama
-                if($count_topics_package[$i][$j] == $count_passes_package[$i][$j])
-                {
+                if ($count_topics_package[$i][$j] == $count_passes_package[$i][$j]) {
                     // jika tidak ada id kelas x di dalam array class_data
-                    if(!(in_array($class_from_package[$i][$j]->class_id, $class_data)))
-                    {
+                    if (!(in_array($class_from_package[$i][$j]->class_id, $class_data))) {
                         // masukkan id kelas x ke class_data
                         $class_data[] = $class_from_package[$i][$j]->class_id;
                     }
@@ -742,32 +708,28 @@ class Home extends BaseController
         $count_class = $this->master->count_data('transactions', ['option' => 'class', 'user_id' => session()->get('user_id')]);
 
         // cek setiap kelas
-        for ($i=0; $i < $count_class; $i++) 
-        { 
+        for ($i = 0; $i < $count_class; $i++) {
             // hitung topik dari kelas yang sedang dicek
             $count_topics_class[] = $this->master->count_data('topics', ['class_id' => $class[$i]->id]);
             // hitung topik yang sudah dilewati dari kelas yang sedang dicek
             $count_passes_class[] = $this->master->count_data('passes', ['class_id' => $class[$i]->id]);
-            
+
             // jika jumlah topik dan jumlah topik yang sudah dilewati sama
-            if($count_topics_class[$i] == $count_passes_class[$i])
-            {
+            if ($count_topics_class[$i] == $count_passes_class[$i]) {
                 // jika tidak ada id kelas x di dalam array class_data
-                if(!(in_array($class[$i]->id, $class_data)))
-                {
+                if (!(in_array($class[$i]->id, $class_data))) {
                     // masukkan id kelas x ke class_data
                     $class_data[] = $class[$i]->id;
                 }
             }
         }
         // jika jumlah data di dalam array class_data > 0
-        if(count($class_data) > 0)
-        {
-            for ($i=0; $i < count($class_data); $i++) { 
+        if (count($class_data) > 0) {
+            for ($i = 0; $i < count($class_data); $i++) {
                 // ambil data kelas berdasarkan id kelas di dalam array class_data
                 $class_list[] = $this->master->get_select('classes', 'classes.class_name, classes.slug, classes.img', ['class_id' => $class_data[$i]])->getRow();
             }
-        // jika jumlah data di dalam array class_data == 0
+            // jika jumlah data di dalam array class_data == 0
         } else {
             // array class_list kosong
             $class_list = [];
