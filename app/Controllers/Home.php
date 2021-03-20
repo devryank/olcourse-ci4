@@ -207,16 +207,20 @@ class Home extends BaseController
         ])->getRow();
 
         $check = is_object($package);
-        if ($check) {
+
+        if($check) {
             // jika ada data di transactions
-            if ($package->id == $course->package_id) {
+            if($package->id == $course->package_id) {
                 // sudah membeli paket
-                $status = '1';
+                $status = 1;
+            } else {
+                $status = 0;    
             }
         } else {
             // belum membeli paket
-            $status = '0';
+            $status = 0;
         }
+
 
         // menampilkan semua kelas dan topik dari paket
         $nama_kelas = array();
@@ -272,6 +276,7 @@ class Home extends BaseController
             // belum membeli
             $status = '0';
         }
+
 
         // jika belum membeli kelas, maka cek di paket
         // apakah ada paket yang memiliki kelas ini?
