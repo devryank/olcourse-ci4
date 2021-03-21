@@ -92,6 +92,7 @@ $routes->get('user/invoice', 'Home::invoice');
 $routes->get('user/konfirmasi-pembayaran', 'Home::konfirmasi_pembayaran');
 $routes->post('user/proses-konfirmasi-pembayaran', 'Home::proses_konfirmasi_pembayaran');
 $routes->get('user/lulus', 'Home::lulus');
+$routes->post('user/lulus/generate/(:any)', 'Home::generateCertificate');
 $routes->get('search', 'Home::search');
 $routes->get('redeem', 'Home::redeem');
 $routes->post('redeem-token', 'Home::redeem_token');
