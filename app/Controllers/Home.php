@@ -674,10 +674,10 @@ class Home extends BaseController
         }
     }
 
-    public function generateCertificate($id){
-        $package = $this->master->get_field('packages', ['package_id' => $id])->getRow();
-        
-        if($package->package_id != null){
+    public function generateCertificate($slug){
+        $package = $this->master->get_field('packages', ['slug' => $slug])->getRow();
+
+        if($package != null){
             $name = strtoupper(session()->get('full_name'));
             $name_len = strlen(session()->get('full_name'));
             $occupation = strtoupper($package->package_name);
@@ -685,12 +685,10 @@ class Home extends BaseController
               $font_size_occupation = 10;
             }
     
-            if ($name == "" || $occupation == "") {
-        
-              //designed certificate picture
-              $image = base_url('/assets/certificate/certificate.png');
-    
-              $createimage = imagecreatefrompng($image);
+            //designed certificate picture
+            $image = new \CodeIgniter\Files\File('assets/certificate/certi.png');
+            
+            $createimage = imagecreatefrompng($image);
     
               //this is going to be created once the generate button is clicked
               $output = $package->slug."-".session()->get('username').".png";
@@ -737,10 +735,10 @@ class Home extends BaseController
               $certificate_text = $name;
     
               //font directory for name
-              $drFont = base_url("/assets/certificate/developer.ttf");
+              $drFont = new \CodeIgniter\Files\File('assets/certificate/developer.ttf');
     
               // font directory for occupation name
-              $drFont1 = base_url("/assets/certificate/Gotham-black.otf");
+              $drFont1 = new \CodeIgniter\Files\File('assets/certificate/Gotham-Black.otf');
     
               //function to display name on certificate picture
               $text1 = imagettftext($createimage, $font_size, $rotation, $origin_x, $origin_y, $black,$drFont, $certificate_text);
@@ -750,11 +748,12 @@ class Home extends BaseController
     
               $certificateimage = imagepng($createimage,$output,3);
 
-              force_download($certificateimage, null);
-              
-            }     
+              $path_certificate = new \CodeIgniter\Files\File($output);
+
+              return $this->response->download($path_certificate, null);
+                 
         } else {
-            $class = $this->master->get_field('classes', ['class_id' => $id])->getRow();
+            $class = $this->master->get_field('classes', ['slug' => $slug])->getRow();
 
             $name = strtoupper(session()->get('full_name'));
             $name_len = strlen(session()->get('full_name'));
@@ -763,15 +762,13 @@ class Home extends BaseController
               $font_size_occupation = 10;
             }
     
-            if ($name == "" || $occupation == "") {
-        
-              //designed certificate picture
-              $image = base_url('/assets/certificate/certi.png');
-    
-              $createimage = imagecreatefrompng($image);
+            //designed certificate picture
+            $image = new \CodeIgniter\Files\File('assets/certificate/certi.png');
+            
+            $createimage = imagecreatefrompng($image);
     
               //this is going to be created once the generate button is clicked
-              $output = $package->slug."-".session()->get('username').".png";
+              $output = $class->slug."-".session()->get('username').".png";
     
               //then we make use of the imagecolorallocate inbuilt php function which i used to set color to the text we are displaying on the image in RGB format
               $white = imagecolorallocate($createimage, 205, 245, 255);
@@ -815,10 +812,10 @@ class Home extends BaseController
               $certificate_text = $name;
     
               //font directory for name
-              $drFont = base_url('assets/certificate/developer.ttf');
+              $drFont = new \CodeIgniter\Files\File('assets/certificate/developer.ttf');
     
               // font directory for occupation name
-              $drFont1 = base_url('assets/certificate/Gotham-black.otf');
+              $drFont1 = new \CodeIgniter\Files\File('assets/certificate/Gotham-Black.otf');
     
               //function to display name on certificate picture
               $text1 = imagettftext($createimage, $font_size, $rotation, $origin_x, $origin_y, $black,$drFont, $certificate_text);
@@ -828,9 +825,9 @@ class Home extends BaseController
     
               $certificateimage = imagepng($createimage,$output,3);
 
-              force_download($certificateimage, null);
+              $path_certificate = new \CodeIgniter\Files\File($output);
 
-            }
+              return $this->response->download($path_certificate, null);
         }
        
     }

@@ -92,7 +92,6 @@ $routes->get('user/invoice', 'Home::invoice');
 $routes->get('user/konfirmasi-pembayaran', 'Home::konfirmasi_pembayaran');
 $routes->post('user/proses-konfirmasi-pembayaran', 'Home::proses_konfirmasi_pembayaran');
 $routes->get('user/lulus', 'Home::lulus');
-$routes->post('user/lulus/generate/(:any)', 'Home::generateCertificate');
 $routes->get('search', 'Home::search');
 $routes->get('redeem', 'Home::redeem');
 $routes->post('redeem-token', 'Home::redeem_token');
@@ -108,6 +107,7 @@ $routes->get('my-package/(:any)', 'Home::my_package/$1');
 $routes->get('topics/(:any)', 'Home::topics/$1');
 $routes->get('learn/(:any)/(:any)', 'Home::learn/$1/$2/$3');
 $routes->get('learn/(:any)/(:any)/(:any)', 'Home::learn/$1/$2/$3');
+$routes->post('home/generateCertificate/(:any)', 'Home::generateCertificate');
 /**
  * --------------------------------------------------------------------
  * Additional Routing
