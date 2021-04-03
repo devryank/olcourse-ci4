@@ -8,7 +8,7 @@ class Validation_user implements FilterInterface
 {
     protected $session;
 
-    public function before(RequestInterface $request)
+    public function before(RequestInterface $request, $arguments = null)
     {
         $this->session = \Config\Services::session();
         if(!$this->session->has('full_name'))
@@ -20,7 +20,7 @@ class Validation_user implements FilterInterface
 
     //--------------------------------------------------------------------
 
-    public function after(RequestInterface $request, ResponseInterface $response)
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
        
     }
