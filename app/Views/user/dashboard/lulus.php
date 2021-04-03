@@ -22,6 +22,9 @@
                         <a href="<?= site_url('course/class/' . $class->slug); ?>">
                             <h4><?= $class->class_name;?></h4>
                         </a>
+                        <a type="button" class="btn clever-btn mb-30 w-100" href="<?= site_url('home/generateCertificate/' . $class->slug)?>">
+                            Generate certificate
+                        </a>
                     </div>
                 </div>
             </div>

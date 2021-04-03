@@ -674,6 +674,164 @@ class Home extends BaseController
         }
     }
 
+    public function generateCertificate($slug){
+        $package = $this->master->get_field('packages', ['slug' => $slug])->getRow();
+
+        if($package != null){
+            $name = strtoupper(session()->get('full_name'));
+            $name_len = strlen(session()->get('full_name'));
+            $occupation = strtoupper($package->package_name);
+            if ($occupation) {
+              $font_size_occupation = 10;
+            }
+    
+            //designed certificate picture
+            $image = new \CodeIgniter\Files\File('assets/certificate/certi.png');
+            
+            $createimage = imagecreatefrompng($image);
+    
+              //this is going to be created once the generate button is clicked
+              $output = $package->slug."-".session()->get('username').".png";
+    
+              //then we make use of the imagecolorallocate inbuilt php function which i used to set color to the text we are displaying on the image in RGB format
+              $white = imagecolorallocate($createimage, 205, 245, 255);
+              $black = imagecolorallocate($createimage, 0, 0, 0);
+    
+              //Then we make use of the angle since we will also make use of it when calling the imagettftext function below
+              $rotation = 0;
+    
+              //we then set the x and y axis to fix the position of our text name
+              $origin_x = 200;
+              $origin_y=260;
+    
+              //we then set the x and y axis to fix the position of our text occupation
+              $origin1_x = 120;
+              $origin1_y=90;
+    
+              //we then set the differnet size range based on the lenght of the text which we have declared when we called values from the form
+              if($name_len<=7){
+                $font_size = 25;
+                $origin_x = 190;
+              }
+              elseif($name_len<=12){
+                $font_size = 30;
+              }
+              elseif($name_len<=15){
+                $font_size = 26;
+              }
+              elseif($name_len<=20){
+                 $font_size = 18;
+              }
+              elseif($name_len<=22){
+                $font_size = 15;
+              }
+              elseif($name_len<=33){
+                $font_size=11;
+              }
+              else {
+                $font_size =10;
+              }
+    
+              $certificate_text = $name;
+    
+              //font directory for name
+              $drFont = new \CodeIgniter\Files\File('assets/certificate/developer.ttf');
+    
+              // font directory for occupation name
+              $drFont1 = new \CodeIgniter\Files\File('assets/certificate/Gotham-Black.otf');
+    
+              //function to display name on certificate picture
+              $text1 = imagettftext($createimage, $font_size, $rotation, $origin_x, $origin_y, $black,$drFont, $certificate_text);
+    
+              //function to display occupation name on certificate picture
+              $text2 = imagettftext($createimage, $font_size_occupation, $rotation, $origin1_x+2, $origin1_y, $black, $drFont1, $occupation);
+    
+              $certificateimage = imagepng($createimage,$output,3);
+
+              $path_certificate = new \CodeIgniter\Files\File($output);
+
+              return $this->response->download($path_certificate, null);
+                 
+        } else {
+            $class = $this->master->get_field('classes', ['slug' => $slug])->getRow();
+
+            $name = strtoupper(session()->get('full_name'));
+            $name_len = strlen(session()->get('full_name'));
+            $occupation = strtoupper($class->class_name);
+            if ($occupation) {
+              $font_size_occupation = 10;
+            }
+    
+            //designed certificate picture
+            $image = new \CodeIgniter\Files\File('assets/certificate/certi.png');
+            
+            $createimage = imagecreatefrompng($image);
+    
+              //this is going to be created once the generate button is clicked
+              $output = $class->slug."-".session()->get('username').".png";
+    
+              //then we make use of the imagecolorallocate inbuilt php function which i used to set color to the text we are displaying on the image in RGB format
+              $white = imagecolorallocate($createimage, 205, 245, 255);
+              $black = imagecolorallocate($createimage, 0, 0, 0);
+    
+              //Then we make use of the angle since we will also make use of it when calling the imagettftext function below
+              $rotation = 0;
+    
+              //we then set the x and y axis to fix the position of our text name
+              $origin_x = 200;
+              $origin_y=260;
+    
+              //we then set the x and y axis to fix the position of our text occupation
+              $origin1_x = 120;
+              $origin1_y=90;
+    
+              //we then set the differnet size range based on the lenght of the text which we have declared when we called values from the form
+              if($name_len<=7){
+                $font_size = 25;
+                $origin_x = 190;
+              }
+              elseif($name_len<=12){
+                $font_size = 30;
+              }
+              elseif($name_len<=15){
+                $font_size = 26;
+              }
+              elseif($name_len<=20){
+                 $font_size = 18;
+              }
+              elseif($name_len<=22){
+                $font_size = 15;
+              }
+              elseif($name_len<=33){
+                $font_size=11;
+              }
+              else {
+                $font_size =10;
+              }
+    
+              $certificate_text = $name;
+    
+              //font directory for name
+              $drFont = new \CodeIgniter\Files\File('assets/certificate/developer.ttf');
+    
+              // font directory for occupation name
+              $drFont1 = new \CodeIgniter\Files\File('assets/certificate/Gotham-Black.otf');
+    
+              //function to display name on certificate picture
+              $text1 = imagettftext($createimage, $font_size, $rotation, $origin_x, $origin_y, $black,$drFont, $certificate_text);
+    
+              //function to display occupation name on certificate picture
+              $text2 = imagettftext($createimage, $font_size_occupation, $rotation, $origin1_x+2, $origin1_y, $black, $drFont1, $occupation);
+    
+              $certificateimage = imagepng($createimage,$output,3);
+
+              $path_certificate = new \CodeIgniter\Files\File($output);
+
+              return $this->response->download($path_certificate, null);
+        }
+       
+    }
+
     public function lulus()
     {
         // semua data paket yang sudah dibeli user

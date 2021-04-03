@@ -107,6 +107,7 @@ $routes->get('my-package/(:any)', 'Home::my_package/$1');
 $routes->get('topics/(:any)', 'Home::topics/$1');
 $routes->get('learn/(:any)/(:any)', 'Home::learn/$1/$2/$3');
 $routes->get('learn/(:any)/(:any)/(:any)', 'Home::learn/$1/$2/$3');
+$routes->post('home/generateCertificate/(:any)', 'Home::generateCertificate');
 /**
  * --------------------------------------------------------------------
  * Additional Routing
