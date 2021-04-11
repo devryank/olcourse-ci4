@@ -642,32 +642,39 @@ class Home extends BaseController
                 $topics = $this->master->get_select('topics', 'topic_id, class_id, slug', ['class_id' => $class->class_id])->getResult();
                 $this_topic = $this->master->get_select('topics', 'topic_id', ['slug' => $topic, 'class_id' => $class->class_id])->getRow();
 
-                // insert data ke passes
-                $data = [
-                    'class_id' => $class->class_id,
-                    'topic_id' => $this_topic->topic_id,
-                    'user_id' => session()->get('user_id'),
-                ];
-                $query = $this->master->insert_data('passes', $data);
-                // jika berhasil insert
-                if ($query) {
-                    foreach ($topics as $row) {
-                        $arr_topics[] = $row->slug;
-                    }
-                    // cari slug topik di dalam arr_topics
-                    $this_topic = array_search($this_topic->topic_id, $arr_topics, true);
-                    // jika ada topik selanjutnya dari kelas ini
-                    if (isset($arr_topics[$this_topic + 1])) {
-                        // slug topik selanjutnya
-                        $next = $arr_topics[$this_topic + 1];
-                        // redirect ke topik selanjutnya
-                        return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $next));
+                $passes_validation = $this->master->get_field('passes', ['class_id' => $class->class_id, 'user_id' => session()->get('user_id')])->getRow();
+                
+                if($passes_validation == null){
+                    // insert data ke passes
+                    $data = [
+                        'class_id' => $class->class_id,
+                        'topic_id' => $this_topic->topic_id,
+                        'user_id' => session()->get('user_id'),
+                    ];
+                    $query = $this->master->insert_data('passes', $data);
+                    // jika berhasil insert
+                    if ($query) {
+                        foreach ($topics as $row) {
+                            $arr_topics[] = $row->slug;
+                        }
+                        // cari slug topik di dalam arr_topics
+                        $this_topic = array_search($this_topic->topic_id, $arr_topics, true);
+                        // jika ada topik selanjutnya dari kelas ini
+                        if (isset($arr_topics[$this_topic + 1])) {
+                            // slug topik selanjutnya
+                            $next = $arr_topics[$this_topic + 1];
+                            // redirect ke topik selanjutnya
+                            return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $next));
+                        } else {
+                            return $this->response->redirect(site_url('topics/' . $class->slug));
+                        }
                     } else {
-                        return $this->response->redirect(site_url('topics/' . $class->slug));
+                        echo 'gagal';
                     }
-                } else {
-                    echo 'gagal';
+                }else{
+                    return $this->response->redirect(site_url('topics/' . $class->slug));
                 }
+                
             } else {
                 return $this->response->redirect(site_url('learn/' . $class->slug . '/' . $topic));
             }
