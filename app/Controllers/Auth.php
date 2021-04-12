@@ -119,8 +119,8 @@ class Auth extends Controller
                 'charset'   => 'utf-8',
                 'protocol'  => 'smtp',
                 'SMTPHost' => 'smtp.gmail.com',
-                'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-                'SMTPPass'   => 'passwordkamu',  // Password gmail
+                'SMTPUser' => 'jquerasantos@gmail.com',  // Email gmail
+                'SMTPPass'   => 'd1d1nw0lescuy',  // Password gmail
                 'smtpCrypto' => 'ssl',
                 'smtpPort'   => 465,
                 'CRLF'    => "\r\n",
