@@ -361,7 +361,7 @@ class Master_model extends Model
 
     public function get_transaksi()
     {
-        $query = $this->db->query("SELECT DISTINCT transactions.option, transactions.transaction_id, transactions.id, course_id, course_name, transactions.amount, transactions.waiting_confirmation,transactions.is_paid, transactions.order_date, transactions.token FROM `transactions` JOIN ((SELECT packages.package_id as course_id, packages.package_name as course_name from packages JOIN transactions ON transactions.id = packages.package_id where transactions.option = 'package') UNION (SELECT classes.class_id as course_id, classes.class_name as course_name from classes JOIN transactions ON transactions.id = classes.class_id where transactions.option = 'class')) ids ON transactions.id = course_id where is_paid = '0' GROUP by transactions.transaction_id");
+        $query = $this->db->query("SELECT DISTINCT transactions.option, transactions.transaction_id, transactions.id, course_id, course_name, transactions.amount, transactions.waiting_confirmation,transactions.is_paid, transactions.bukti_pembayaran, transactions.order_date, transactions.token FROM `transactions` JOIN ((SELECT packages.package_id as course_id, packages.package_name as course_name from packages JOIN transactions ON transactions.id = packages.package_id where transactions.option = 'package') UNION (SELECT classes.class_id as course_id, classes.class_name as course_name from classes JOIN transactions ON transactions.id = classes.class_id where transactions.option = 'class')) ids ON transactions.id = course_id where is_paid = '0' GROUP by transactions.transaction_id");
         return $query;
     }
 

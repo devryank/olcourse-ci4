@@ -38,6 +38,13 @@
                                 <small class="text-danger"><?= \Config\Services::validation()->getError('content'); ?></small>
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label">Konten Videos Link Youtube</label>
+                                <textarea id="editor" name="content_videos" rows="10" cols="30"></textarea>
+                                <small class="text-danger"><?= \Config\Services::validation()->getError('content_videos'); ?></small>
+                            </div>
+                        </div>
                         <div class="tile-footer">
                             <button class="btn btn-primary" type="submit"><i class="fa fa-fw fa-lg fa-check-circle"></i>Tambah</button>&nbsp;&nbsp;&nbsp;<a class="btn btn-secondary" href="<?= site_url('admin/topik'); ?>"><i class="fa fa-fw fa-lg fa-times-circle"></i>Cancel</a>
                         </div>

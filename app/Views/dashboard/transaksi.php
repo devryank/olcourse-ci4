@@ -16,6 +16,7 @@
                                         <th>Nama Kursus</th>
                                         <th>Harga</th>
                                         <th>Tanggal Order</th>
+                                        <th>Bukti Pembayaran</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -32,6 +33,7 @@
                                             <td><?= $row->course_name; ?></td>
                                             <td><?= "Rp " . number_format($row->amount, 0, ',', '.'); ?></td>
                                             <td><?= $row->order_date; ?></td>
+                                            <td><img src="<?= base_url();?>/assets/uploads/buktipembayaran/<?= $row->bukti_pembayaran;?>" alt="" style="height: 220px;"></td>
                                             <td><?php if($row->waiting_confirmation == '1'){ echo "<small class='text-white bg-primary pt-1 pr-1 pb-1 pl-1'>Menunggu</small>";} ?></td>
                                             <td><a href="<?= site_url('admin/verify_payment/' . $row->transaction_id); ?>" class="btn btn-sm btn-success"><i class="fa fa-check mx-auto"></i></a></td>
                                         </tr>

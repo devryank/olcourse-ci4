@@ -500,7 +500,7 @@ class Home extends BaseController
     {
         $validation = \Config\Services::validation();
         $input = [
-            'invoice_id' => $this->request->getPost('invoice_id')
+            'invoice_id' => $this->request->getPost('invoice_id'),
         ];
         if (!$validation->run($input, 'invoice')) {
             helper('form');
@@ -509,19 +509,40 @@ class Home extends BaseController
             ];
             echo view('user/konfirmasi-pembayaran', $data);
         } else {
+            helper('form','url');
             // data transaksi berdasarkan id transaksi
             $query = $this->master->get_select('transactions', 'transaction_id', ['transaction_id' => $this->request->getPost('invoice_id')])->getRow();
             if ($query) {
                 // update waiting confirmation ke 1
                 // akan muncul di menu admin untuk dikonfirmasi
-                $update = $this->master->update_data('transactions', ['transaction_id' => $this->request->getPost('invoice_id')], ['waiting_confirmation' => '1']);
-                if ($update) {
-                    session()->setFlashdata('message', '<div class="alert alert-success">Berhasil submit invoice. Silahkan tunggu.</div>');
-                    return redirect()->route('user/invoice');
-                } else {
-                    session()->setFlashdata('message', '<div class="alert alert-success">Gagal submit invoice. Silahkan coba lagi.</div>');
-                    return redirect()->route('user/invoice');
+
+                $validated = $this->validate([
+                    'file' => [
+                        'uploaded[file]',
+                        'mime_in[file,image/jpg,image/jpeg,image/gif,image/png]',
+                        'max_size[file,4096]',
+                    ],
+                ]);
+         
+          
+                if ($validated) {
+                    $avatar = $this->request->getFile('file');
+                    $newName = $avatar->getRandomName();
+                    $avatar->move('assets/uploads/buktipembayaran', $newName);
+         
+                    $update = $this->master->update_data('transactions', ['transaction_id' => $this->request->getPost('invoice_id')], ['waiting_confirmation' => '1', 'bukti_pembayaran' => $newName]);
+                    if ($update) {
+                        session()->setFlashdata('message', '<div class="alert alert-success">Berhasil submit invoice. Silahkan tunggu.</div>');
+                        return redirect()->route('user/invoice');
+                    } else {
+                        session()->setFlashdata('message', '<div class="alert alert-success">Gagal submit invoice. Silahkan coba lagi.</div>');
+                        return redirect()->route('user/invoice');
+                    }
+                }else{
+                    session()->setFlashdata('message', '<div class="alert alert-danger">Bukti pembayaran belum di upload.</div>');
+                    return redirect()->route('user/konfirmasi-pembayaran');
                 }
+         
             } else {
                 session()->setFlashdata('message', '<div class="alert alert-success">Invoice tidak ditemukan. Silahkan coba lagi.</div>');
                 return redirect()->route('user/konfirmasi-pembayaran');

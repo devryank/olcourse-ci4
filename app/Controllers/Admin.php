@@ -270,11 +270,15 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/topik/add', $data);
 		} else {
+			$content_videos_link = $this->request->getPost('content_videos');
+			$content_videos_replace = str_replace('https://www.youtube.com/watch?v=','https://www.youtube.com/embed/',$content_videos_link);
+			
 			$input = [
 				'class_id' => $this->request->getPost('class_id'),
 				'topic_name' => $this->request->getPost('topic_name'),
 				'number' => $this->request->getPost('number'),
 				'slug' => url_title(strtolower($this->request->getPost('topic_name'))),
+				'content_videos' => $content_videos_replace,
 				'content' => $this->request->getPost('content'),
 			];
 
