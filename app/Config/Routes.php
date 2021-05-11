@@ -108,6 +108,7 @@ $routes->get('topics/(:any)', 'Home::topics/$1');
 $routes->get('learn/(:any)/(:any)', 'Home::learn/$1/$2/$3');
 $routes->get('learn/(:any)/(:any)/(:any)', 'Home::learn/$1/$2/$3');
 $routes->post('home/generateCertificate/(:any)', 'Home::generateCertificate');
+$routes->post('home/tambahTestimonial/(:any)', 'Home::tambahTestimonial/$1');
 /**
  * --------------------------------------------------------------------
  * Additional Routing

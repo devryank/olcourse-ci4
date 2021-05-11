@@ -119,7 +119,7 @@ class Auth extends Controller
                 'charset'   => 'utf-8',
                 'protocol'  => 'smtp',
                 'SMTPHost' => 'smtp.gmail.com',
-                'SMTPUser' => 'jquerasantos@gmail.com',  // Email gmail
+                'SMTPUser' => 'francescovanboteng@gmail.com',  // Email gmail
                 'SMTPPass'   => 'd1d1nw0lescuy',  // Password gmail
                 'smtpCrypto' => 'ssl',
                 'smtpPort'   => 465,
@@ -127,7 +127,7 @@ class Auth extends Controller
                 'newline' => "\r\n"
             ];
             $email->initialize($config);
-            $email->setFrom('emailkamu@gmail.com', 'Ryan Course');
+            $email->setFrom('francescovanboteng@gmail.com', 'OLCourse');
             $email->setTo($this->request->getPost('email'));
 
             $email->setSubject('Konfirmasi E-mail');

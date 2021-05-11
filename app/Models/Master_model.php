@@ -5,10 +5,12 @@ class Master_model extends Model
 {
     protected $users = 'users';
     protected $topics = 'topics';
+    protected $passes = 'passes';
     protected $classes = 'classes';
     protected $packages = 'packages';
     protected $transactions = 'transactions';
     protected $class_packages = 'class_packages';
+    protected $testimonials = 'testimonials';
 
     public function get_all($table)
     {
@@ -68,6 +70,7 @@ class Master_model extends Model
         {
             $id = $this->db->insertID();
             return $id;
+
         } else {
             return $query;
         }
@@ -342,13 +345,41 @@ class Master_model extends Model
         return $query;
     }
 
+    public function show_list_testimonials_package($package_id)
+    {
+        $query = $this->db->table($this->testimonials)
+                          ->join('users', 'users.user_id=testimonials.user_id')
+                          ->select('users.full_name, testimonials.class_id, testimonials.package_id, testimonials.judul, testimonials.deskripsi, testimonials.rating, testimonials.status, testimonials.created_at')
+                          ->where('testimonials.package_id', $package_id)
+                          ->get();
+        return $query;
+    }
+    
+    public function show_list_testimonials_class($class_id)
+    {
+        $query = $this->db->table($this->testimonials)
+                          ->join('users', 'users.user_id=testimonials.user_id')
+                          ->select('users.full_name, testimonials.class_id, testimonials.package_id, testimonials.judul, testimonials.deskripsi, testimonials.rating ,testimonials.status, testimonials.created_at')
+                          ->where('testimonials.class_id', $class_id)
+                          ->get();
+        return $query;
+    }
+
     public function show_list_topics_left_passes($where)
     {
         $query = $this->db->table($this->topics)
-                          ->select('topics.topic_name, topics.slug, passes.topic_id')
-                          ->join('passes', 'passes.topic_id=topics.topic_id', 'left')
+                          ->select('*')
                           ->where($where)
                           ->orderBy('topics.number')
+                          ->get();
+        return $query;
+    }
+
+    public function show_list_topics_passes($where)
+    {
+        $query = $this->db->table($this->passes)
+                          ->select('passes.topic_id')
+                          ->where($where)
                           ->get();
         return $query;
     }

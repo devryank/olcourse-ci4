@@ -2,7 +2,39 @@
 
 <?= $this->section('main'); ?>
 
-
+<style>
+.rating {
+    float:left;
+    width:300px;
+}
+.rating span { float:right; position:relative; }
+.rating span input {
+    position:absolute;
+    top:0px;
+    left:0px;
+    opacity:0;
+}
+.rating span label {
+    display:inline-block;
+    width:30px;
+    height:30px;
+    text-align:center;
+    color:#FFF;
+    background:#ccc;
+    font-size:30px;
+    margin-right:2px;
+    line-height:30px;
+    border-radius:50%;
+    -webkit-border-radius:50%;
+}
+.rating span:hover ~ span label,
+.rating span:hover label,
+.rating span.checked label,
+.rating span.checked ~ span label {
+    background:#F90;
+    color:#FFF;
+}
+</style>
 <!-- ##### Single Course Intro Start ##### -->
 <div class="single-course-intro d-flex align-items-center justify-content-center" style="background-image: url('<?= base_url(); ?>/assets/user/img/bg-img/bg3.jpg');">
     <!-- Content -->
@@ -67,6 +99,53 @@
                                                     </div>
                                                 </div>
                                             <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                    <div class="about-course mb-30">
+                                        <h4>Testimonials</h4>
+                                        <div class="row">
+                                            <?php foreach ($testimonial as $testi) : ?>
+                                                <div class="col-lg-12">
+                                                    <div class="single-instructor d-flex align-items-center mb-30">
+                                                        <div class="instructor-thumb h-100 pt-3 pb-3 pl-3">
+                                                            
+                                                        </div>
+                                                        <div class="instructor-info">
+                                                            <b><?= $testi->full_name; ?></b>
+                                                            <br/>
+                                                            <br/>
+                                                            <h5><?= $testi->judul; ?></h5>
+                                                            <p><?= $testi->deskripsi; ?></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                            <?php if ($status == '1') : ?>
+                                                <form action="<?= site_url('home/tambahTestimonial/'.$course->package_id);?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+                                                
+                                                        </div>
+                                                        <div class="instructor-info">
+                                                        <div class="form-group">
+                                                            <div class="rating">
+                                                                <span><input type="radio" name="rating" id="str5" value="5"><label for="str5"><i class="fa fa-star"></i></label></span>
+                                                                <span><input type="radio" name="rating" id="str4" value="4"><label for="str4"><i class="fa fa-star"></i></label></span>
+                                                                <span><input type="radio" name="rating" id="str3" value="3"><label for="str3"><i class="fa fa-star"></i></label></span>
+                                                                <span><input type="radio" name="rating" id="str2" value="2"><label for="str2"><i class="fa fa-star"></i></label></span>
+                                                                <span><input type="radio" name="rating" id="str1" value="1"><label for="str1"><i class="fa fa-star"></i></label></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <input type="text" class="form-control" id="judul" aria-describedby="judul" placeholder="Enter judul" name="judul">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <textarea name="deskripsi" class="form-control" placeholder="Enter deskripsi"></textarea> 
+                                                        </div>
+                                                        <div class="col-lg-12 text-left">
+                                                            <input type="submit" class="btn clever-btn mt-5" value="Konfirmasi">
+                                                        </div>
+                                                
+                                                </form>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -142,5 +221,22 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+$(document).ready(function(){
+    // Check Radio-box
+    $(".rating input:radio").attr("checked", false);
+
+    $('.rating input').click(function () {
+        $(".rating span").removeClass('checked');
+        $(this).parent().addClass('checked');
+    });
+
+    $('input:radio').change(
+      function(){
+        var userRating = this.value;
+        alert(userRating);
+    }); 
+});
+</script>
 <!-- ##### Courses Content End ##### -->
 <?= $this->endSection(); ?>

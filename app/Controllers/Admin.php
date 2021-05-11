@@ -913,11 +913,12 @@ class Admin extends Controller
 		shuffle($seed);
 		$rand = '';
 		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
-
+		
 		$data = [
 			'waiting_confirmation' => '0',
 			'is_paid' => '1',
 			'payment_date' => date('Y-m-d h:i:s'),
+			'course_end_date' => date('Y-m-d H:i:s', time() + (60 * 60 * 24 * 30)), 
 			'token' => $rand
 		];
 		$query = $this->master->update_data('transactions', ['transaction_id' => $id], $data);
@@ -931,15 +932,15 @@ class Admin extends Controller
 				'charset'   => 'utf-8',
 				'protocol'  => 'smtp',
 				'SMTPHost' => 'smtp.gmail.com',
-				'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-				'SMTPPass'   => 'passwordkamu',  // Password gmail
+				'SMTPUser' => 'francescovanboteng@gmail.com',  // Email gmail
+				'SMTPPass'   => 'd1d1nw0lescuy',  // Password gmail
 				'smtpCrypto' => 'ssl',
 				'smtpPort'   => 465,
 				'CRLF'    => "\r\n",
 				'newline' => "\r\n"
 			];
 			$email->initialize($config);
-			$email->setFrom('emailkamu@gmail.com', 'Ryan Course');
+			$email->setFrom('francescovanboteng@gmail.com', 'OL Course');
 			$email->setTo($user->email);
 
 			$email->setSubject('Token kamu');
