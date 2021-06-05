@@ -80,15 +80,15 @@ class Home extends BaseController
                 'charset'   => 'utf-8',
                 'protocol'  => 'smtp',
                 'SMTPHost' => 'smtp.gmail.com',
-                'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-                'SMTPPass'   => 'passwordkamu',  // Password gmail
+                'SMTPUser' => 'francescovanboteng@gmail.com',  // Email gmail
+                'SMTPPass'   => 'd1d1nw0lescuy',  // Password gmail
                 'smtpCrypto' => 'ssl',
                 'smtpPort'   => 465,
                 'CRLF'    => "\r\n",
                 'newline' => "\r\n"
             ];
             $email->initialize($config);
-            $email->setFrom('emailkamu@gmail.com', 'Ryan Course');
+            $email->setFrom('francescovanboteng@gmail.com', 'OLCourse');
             $email->setTo($this->request->getPost('email'));
 
             $email->setSubject('Verification Link - Forgot Password');
@@ -201,10 +201,12 @@ class Home extends BaseController
 
         // cek user yang sedang login apakah sudah membeli paket
         $package = $this->master->get_select('transactions', 'id', [
+            'id' => $course->package_id,
             'option' => 'package',
             'user_id' => session()->get('user_id'),
             'course_end_date >=' => my_timezone()->format('Y-m-d H:i:s')
         ])->getRow();
+
 
         $check = is_object($package);
 
@@ -231,6 +233,8 @@ class Home extends BaseController
             foreach ($topics as $topic) {
                 $nama_topik[$class_key][] = $topic->topic_name;
             }
+
+            $testimonial_class = $this->master->show_list_testimonials_package($course->package_id)->getResult();
         }
 
         $data = [
@@ -239,8 +243,10 @@ class Home extends BaseController
             'class_list' => $class_list,
             'status' => $status,
             'class_curriculum' => $nama_kelas,
-            'topic_curriculum' => $nama_topik
+            'topic_curriculum' => $nama_topik,
+            'testimonial' => $testimonial_class
         ];
+        
         echo view('user/single-course-package', $data);
     }
 
@@ -295,7 +301,6 @@ class Home extends BaseController
             // cek semua paket yang dibeli
             for ($i = 0; $i < $count_package; $i++) {
                 $class_from_package[] = $this->master->get_select('class_packages', 'class_id', ['package_id' => $package[$i]->id])->getResult();
-
                 // cek satu per satu kelas di dalam paket
                 for ($j = 0; $j < count($class_from_package[$i]); $j++) {
                     // jika ada kelas di dalam paket yang sama id nya dengan kelas yang sedang dilihat
@@ -316,11 +321,13 @@ class Home extends BaseController
             }
         }
         $curriculum = $this->master->get_select('topics', 'topic_name', ['class_id' => $course->class_id])->getResult();
+        $testimonial_class = $this->master->show_list_testimonials_class($course->class_id)->getResult();
         $data = [
             'title' => 'Paket ' . $course->class_name . ' - Online Course',
             'course' => $course,
             'status' => $status,
-            'topics' => $curriculum
+            'topics' => $curriculum,
+            'testimonial' => $testimonial_class
         ];
         echo view('user/single-course-class', $data);
     }
@@ -500,7 +507,7 @@ class Home extends BaseController
     {
         $validation = \Config\Services::validation();
         $input = [
-            'invoice_id' => $this->request->getPost('invoice_id')
+            'invoice_id' => $this->request->getPost('invoice_id'),
         ];
         if (!$validation->run($input, 'invoice')) {
             helper('form');
@@ -509,19 +516,40 @@ class Home extends BaseController
             ];
             echo view('user/konfirmasi-pembayaran', $data);
         } else {
+            helper('form','url');
             // data transaksi berdasarkan id transaksi
             $query = $this->master->get_select('transactions', 'transaction_id', ['transaction_id' => $this->request->getPost('invoice_id')])->getRow();
             if ($query) {
                 // update waiting confirmation ke 1
                 // akan muncul di menu admin untuk dikonfirmasi
-                $update = $this->master->update_data('transactions', ['transaction_id' => $this->request->getPost('invoice_id')], ['waiting_confirmation' => '1']);
-                if ($update) {
-                    session()->setFlashdata('message', '<div class="alert alert-success">Berhasil submit invoice. Silahkan tunggu.</div>');
-                    return redirect()->route('user/invoice');
-                } else {
-                    session()->setFlashdata('message', '<div class="alert alert-success">Gagal submit invoice. Silahkan coba lagi.</div>');
-                    return redirect()->route('user/invoice');
+
+                $validated = $this->validate([
+                    'file' => [
+                        'uploaded[file]',
+                        'mime_in[file,image/jpg,image/jpeg,image/gif,image/png]',
+                        'max_size[file,4096]',
+                    ],
+                ]);
+         
+          
+                if ($validated) {
+                    $avatar = $this->request->getFile('file');
+                    $newName = $avatar->getRandomName();
+                    $avatar->move('assets/uploads/buktipembayaran', $newName);
+         
+                    $update = $this->master->update_data('transactions', ['transaction_id' => $this->request->getPost('invoice_id')], ['waiting_confirmation' => '1', 'bukti_pembayaran' => $newName]);
+                    if ($update) {
+                        session()->setFlashdata('message', '<div class="alert alert-success">Berhasil submit invoice. Silahkan tunggu.</div>');
+                        return redirect()->route('user/invoice');
+                    } else {
+                        session()->setFlashdata('message', '<div class="alert alert-success">Gagal submit invoice. Silahkan coba lagi.</div>');
+                        return redirect()->route('user/invoice');
+                    }
+                }else{
+                    session()->setFlashdata('message', '<div class="alert alert-danger">Bukti pembayaran belum di upload.</div>');
+                    return redirect()->route('user/konfirmasi-pembayaran');
                 }
+         
             } else {
                 session()->setFlashdata('message', '<div class="alert alert-success">Invoice tidak ditemukan. Silahkan coba lagi.</div>');
                 return redirect()->route('user/konfirmasi-pembayaran');
@@ -585,6 +613,7 @@ class Home extends BaseController
             'classes' => $this->master->show_package_or_class_user('classes', 'classes.class_id=transactions.id')->get()->getResult(),
             'count_classes' => $this->master->show_package_or_class_user('classes', 'classes.class_id=transactions.id')->countAllResults(),
         ];
+        
         echo view('user/dashboard/index', $data);
     }
 
@@ -619,8 +648,10 @@ class Home extends BaseController
             'title' => 'Dashboard - Online Course',
             'className' => $class->class_name,
             'segment' =>  $this->request->uri->getSegments(),
-            'listTopics' => $this->master->show_list_topics_left_passes(['topics.class_id' => $class->class_id])->getResult() // list topik yang belum dan sudah dilewati
+            'listTopics' => $this->master->show_list_topics_left_passes(['topics.class_id' => $class->class_id])->getResult(), // list topik yang belum dan sudah dilewati
+            'listPasses' => $this->master->show_list_topics_passes(['passes.class_id' => $class->class_id,'passes.user_id' => session()->get('user_id')])->getResult()
         ];
+
         echo view('user/dashboard/topics', $data);
     }
 
@@ -642,9 +673,10 @@ class Home extends BaseController
                 $topics = $this->master->get_select('topics', 'topic_id, class_id, slug', ['class_id' => $class->class_id])->getResult();
                 $this_topic = $this->master->get_select('topics', 'topic_id', ['slug' => $topic, 'class_id' => $class->class_id])->getRow();
 
-                $passes_validation = $this->master->get_field('passes', ['class_id' => $class->class_id, 'user_id' => session()->get('user_id')])->getRow();
-                
+                $passes_validation = $this->master->get_select('passes','topic_id',['topic_id' => $this_topic->topic_id, 'user_id' => session()->get('user_id')])->getRow();
+
                 if($passes_validation == null){
+                    
                     // insert data ke passes
                     $data = [
                         'class_id' => $class->class_id,
@@ -859,7 +891,7 @@ class Home extends BaseController
                 // hitung topik dari kelas yang sedang dicek
                 $count_topics_package[$i][$j] = $this->master->count_data('topics', ['class_id' => $class_from_package[$i][$j]->class_id]);
                 // hitung topik yang sudah dilewati dari kelas yang sedang dicek
-                $count_passes_package[$i][$j] = $this->master->count_data('passes', ['class_id' => $class_from_package[$i][$j]->class_id]);
+                $count_passes_package[$i][$j] = $this->master->count_data('passes', ['class_id' => $class_from_package[$i][$j]->class_id, 'user_id' => session()->get('user_id')]);
 
                 // jika jumlah topik dan jumlah topik yang sudah dilewati sama
                 if ($count_topics_package[$i][$j] == $count_passes_package[$i][$j]) {
@@ -910,4 +942,107 @@ class Home extends BaseController
         ];
         echo view('user/dashboard/lulus', $data);
     }
+
+
+    public function tambahTestimonial($id)
+    {
+       // semua data paket yang sudah dibeli user
+       $package = $this->master->get_select('transactions', 'id', ['id' => $id,'option' => 'package', 'user_id' => session()->get('user_id')])->getResult();
+       // hitung semua data paket yang sudah dibeli user
+       $count_package = $this->master->count_data('transactions', ['id' => $id, 'option' => 'package', 'user_id' => session()->get('user_id')]);
+
+       if($package != null){
+           //fungsi validasi package  
+
+           $class_data = []; // array penampung id kelas
+           // cek setiap package
+           for ($i = 0; $i < $count_package; $i++) {
+               // ambil data kelas dari paket yang sedang dicek
+               $class_from_package[] = $this->master->get_select('class_packages', 'class_id', ['package_id' => $package[$i]->id])->getResult();
+               // hitung total kelas dari paket yang sedang dicek
+               $count_class_from_package = $this->master->count_data('class_packages', ['package_id' => $package[$i]->id]);
+
+               // looping kelas dari paket yang sedang dicek
+               for ($j = 0; $j < $count_class_from_package; $j++) {
+                   // hitung topik dari kelas yang sedang dicek
+                   $count_topics_package[$i][$j] = $this->master->count_data('topics', ['class_id' => $class_from_package[$i][$j]->class_id]);
+                   // hitung topik yang sudah dilewati dari kelas yang sedang dicek
+                   $count_passes_package[$i][$j] = $this->master->count_data('passes', ['class_id' => $class_from_package[$i][$j]->class_id]);
+
+                   // jika jumlah topik dan jumlah topik yang sudah dilewati sama
+                   if ($count_topics_package[$i][$j] == $count_passes_package[$i][$j]) {
+                       
+                       $data = [
+                           'user_id' => session()->get('user_id'),
+                           'package_id' => $id,
+                           'judul' => $this->request->getPost('judul'),
+                           'deskripsi' => $this->request->getPost('deskripsi'),
+                           'rating' => $this->request->getPost('rating')
+                       ];
+
+                       $query = $this->master->insert_data('testimonials', $data);
+                       
+                       session()->setFlashdata('message', '<div class="alert alert-success">Testimonial berhasil dibuat</div>');
+                       return redirect()->back();
+                   }else{
+
+                       session()->setFlashdata('message', '<div class="alert alert-danger">Testimonial gagal dibuat</div>');
+                       return redirect()->back();
+
+                   }
+               }
+           }
+
+           //akhir fungsi validasi
+       } else {
+
+           // semua data paket yang sudah dibeli user
+           $class = $this->master->get_select('transactions', 'id', ['id' => $id, 'option' => 'class', 'user_id' => session()->get('user_id')])->getResult();
+           // hitung semua data paket yang sudah dibeli user
+           $count_class = $this->master->count_data('transactions', ['id' => $id, 'option' => 'class', 'user_id' => session()->get('user_id')]);
+
+           $class_data = []; // array penampung id kelas
+
+           // cek setiap kelas
+           for ($i = 0; $i < $count_class; $i++) {
+               // hitung topik dari kelas yang sedang dicek
+               $count_topics_class[] = $this->master->count_data('topics', ['class_id' => $class[$i]->id]);
+               // hitung topik yang sudah dilewati dari kelas yang sedang dicek
+               $count_passes_class[] = $this->master->count_data('passes', ['class_id' => $class[$i]->id]);
+
+               // jika jumlah topik dan jumlah topik yang sudah dilewati sama
+               if ($count_topics_class[$i] == $count_passes_class[$i]) {
+                   // jika tidak ada id kelas x di dalam array class_data
+                   if (!(in_array($class[$i]->id, $class_data))) {
+                       // masukkan id kelas x ke class_data
+                       $class_data[] = $class[$i]->id;
+                   }
+               }
+           }
+           // jika jumlah data di dalam array class_data > 0
+           if (count($class_data) > 0) {
+              
+               $data = [
+                   'user_id' => session()->get('user_id'),
+                   'class_id' => $id,
+                   'judul' => $this->request->getPost('judul'),
+                   'deskripsi' => $this->request->getPost('deskripsi'),
+                   'rating' => $this->request->getPost('rating')
+               ];
+               $query = $this->master->insert_data('testimonials', $data);
+
+               session()->setFlashdata('message', '<div class="alert alert-success">Berhasil submit invoice. Silahkan tunggu.</div>');
+               return redirect()->back();
+
+           } else {
+               
+               session()->setFlashdata('message', '<div class="alert alert-danger">Testimonial gagal dibuat</div>');
+               return redirect()->back();
+
+           }
+
+       }
+       
+    }
+
 }
