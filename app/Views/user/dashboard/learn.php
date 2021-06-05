@@ -13,6 +13,9 @@
     <div class="col-12 col-sm-6 col-lg-8 offset-lg-2">
         <div class="page-content">
             <h4 class="text-center"><?= $topic->topic_name;?></h4>
+            <iframe height="480" width="100%"
+                src="<?= $topic->content_videos?>">
+            </iframe>
             <p><?= $topic->content;?></p>
         </div>
         <div class="text-center mt-4">
@@ -20,5 +23,4 @@
         </div>
     </div>
 </div>
-
 <?= $this->endSection(); ?>
