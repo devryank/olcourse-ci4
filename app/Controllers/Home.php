@@ -644,10 +644,11 @@ class Home extends BaseController
     public function topics($slug)
     {
         $class = $this->master->get_field('classes', ['slug' => $slug])->getRow();
+
         $data = [
             'title' => 'Dashboard - Online Course',
             'className' => $class->class_name,
-            'segment' =>  $this->request->uri->getSegments(),
+            'segment' =>  $this->request->uri->getSegments(),   
             'listTopics' => $this->master->show_list_topics_left_passes(['topics.class_id' => $class->class_id])->getResult(), // list topik yang belum dan sudah dilewati
             'listPasses' => $this->master->show_list_topics_passes(['passes.class_id' => $class->class_id,'passes.user_id' => session()->get('user_id')])->getResult()
         ];

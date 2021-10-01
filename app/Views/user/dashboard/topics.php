@@ -13,6 +13,7 @@
     <div class="col-12 col-sm-6 col-lg-8 offset-lg-2">
         <?php foreach ($listTopics as $topic) : ?>
             <?php foreach ($listPasses as $passes) : ?>
+                <div class="row">
                 <?php if($passes->topic_id == $topic->topic_id):?>
                         <a href="<?= site_url('learn/' . $segment[1] . '/' . $topic->slug); ?>" class="text-left btn clever-btn btn-2 w-100 mb-2" style="color: black;">
                             <div class="row">
@@ -24,7 +25,7 @@
                                 </div>
                             </div>
                         </a>
-                <?php elseif($passes->topic_id == null):?>
+                <?php elseif($passes->topic_id != null):?>
                     <a href="<?= site_url('learn/' . $segment[1] . '/' . $topic->slug); ?>" class="text-left btn clever-btn btn-2 w-100 mb-2" style="color: black;">
                             <div class="row">
                                 <div class="col-lg-11">
@@ -34,6 +35,20 @@
                         </a>
                 <?php endif;?>
         <?php endforeach; ?>
+    <?php endforeach; ?>
+
+
+    <?php foreach ($listTopics as $topic) : ?>
+                <div class="row">
+              
+                    <a href="<?= site_url('learn/' . $segment[1] . '/' . $topic->slug); ?>" class="text-left btn clever-btn btn-2 w-100 mb-2" style="color: black;">
+                            <div class="row">
+                                <div class="col-lg-11">
+                                    <?= $topic->topic_name; ?>
+                                </div>
+                            </div>
+                        </a>
+
     <?php endforeach; ?>
     </div>
 </div>
