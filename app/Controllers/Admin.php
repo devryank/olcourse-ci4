@@ -270,11 +270,15 @@ class Admin extends Controller
 			];
 			echo view('dashboard/master/topik/add', $data);
 		} else {
+			$content_videos_link = $this->request->getPost('content_videos');
+			$content_videos_replace = str_replace('https://www.youtube.com/watch?v=','https://www.youtube.com/embed/',$content_videos_link);
+			
 			$input = [
 				'class_id' => $this->request->getPost('class_id'),
 				'topic_name' => $this->request->getPost('topic_name'),
 				'number' => $this->request->getPost('number'),
 				'slug' => url_title(strtolower($this->request->getPost('topic_name'))),
+				'content_videos' => $content_videos_replace,
 				'content' => $this->request->getPost('content'),
 			];
 
@@ -909,11 +913,12 @@ class Admin extends Controller
 		shuffle($seed);
 		$rand = '';
 		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
-
+		
 		$data = [
 			'waiting_confirmation' => '0',
 			'is_paid' => '1',
 			'payment_date' => date('Y-m-d h:i:s'),
+			'course_end_date' => date('Y-m-d H:i:s', time() + (60 * 60 * 24 * 30)), 
 			'token' => $rand
 		];
 		$query = $this->master->update_data('transactions', ['transaction_id' => $id], $data);
@@ -927,15 +932,15 @@ class Admin extends Controller
 				'charset'   => 'utf-8',
 				'protocol'  => 'smtp',
 				'SMTPHost' => 'smtp.gmail.com',
-				'SMTPUser' => 'emailkamu@gmail.com',  // Email gmail
-				'SMTPPass'   => 'passwordkamu',  // Password gmail
+				'SMTPUser' => 'francescovanboteng@gmail.com',  // Email gmail
+				'SMTPPass'   => 'd1d1nw0lescuy',  // Password gmail
 				'smtpCrypto' => 'ssl',
 				'smtpPort'   => 465,
 				'CRLF'    => "\r\n",
 				'newline' => "\r\n"
 			];
 			$email->initialize($config);
-			$email->setFrom('emailkamu@gmail.com', 'Ryan Course');
+			$email->setFrom('francescovanboteng@gmail.com', 'OL Course');
 			$email->setTo($user->email);
 
 			$email->setSubject('Token kamu');
